@@ -51,6 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         checkAdmin(s.user.id);
       }
       setLoading(false);
+    }).catch(() => {
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();

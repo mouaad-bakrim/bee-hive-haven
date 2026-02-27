@@ -8,10 +8,11 @@ import { useToast } from "@/hooks/use-toast";
 import { LogIn, Loader2 } from "lucide-react";
 
 export default function Login() {
-  const { user, isAdmin, loading, signIn } = useAuth();
+  const { user, isAdmin, loading, signIn, signUp } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const { toast } = useToast();
 
   if (loading) {
@@ -27,10 +28,14 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const { error } = await signIn(email, password);
+    const { error } = isSignUp
+      ? await signUp(email, password)
+      : await signIn(email, password);
     setSubmitting(false);
     if (error) {
-      toast({ title: "Erreur de connexion", description: error, variant: "destructive" });
+      toast({ title: isSignUp ? "Erreur d'inscription" : "Erreur de connexion", description: error, variant: "destructive" });
+    } else if (isSignUp) {
+      toast({ title: "Compte créé", description: "Vérifiez votre email pour confirmer votre compte." });
     }
   };
 
@@ -75,9 +80,17 @@ export default function Login() {
             </div>
             <Button type="submit" className="w-full honey-gradient text-primary-foreground" disabled={submitting}>
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <LogIn className="w-4 h-4 mr-2" />}
-              Se connecter
+              {isSignUp ? "Créer le compte" : "Se connecter"}
             </Button>
           </form>
+
+          <button
+            type="button"
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {isSignUp ? "Déjà un compte ? Se connecter" : "Pas de compte ? S'inscrire"}
+          </button>
 
           {user && !isAdmin && (
             <p className="mt-4 text-center text-sm text-destructive">

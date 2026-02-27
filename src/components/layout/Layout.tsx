@@ -4,6 +4,7 @@ import { ArrowUp } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Header from "./Header";
 import Footer from "./Footer";
+import ChatbotWidget from "@/components/ChatbotWidget";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -48,6 +49,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <main className="flex-1 pt-16">{children}</main>
       <Footer />
       <BackToTop />
+      <ChatbotWidget />
     </div>
   );
 }

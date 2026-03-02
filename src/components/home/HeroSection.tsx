@@ -1,9 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Instagram, Facebook } from "lucide-react";
 import HeroBackground from "./HeroBackground";
-import heroImage from "@/assets/hero-apiary.jpg";
+import heroApiary from "@/assets/hero-apiary.jpg";
+import heroHoneycomb from "@/assets/hero-honeycomb.jpg";
+import heroBeekeeper from "@/assets/hero-beekeeper.jpg";
+import heroLavender from "@/assets/hero-lavender.jpg";
+
+const SLIDES = [heroApiary, heroHoneycomb, heroBeekeeper, heroLavender];
+const SLIDE_DURATION = 6000;
 
 const FLOATING_ICONS = [
   { emoji: "🐝", x: "10%", y: "20%", size: 32, dur: 6 },
@@ -15,6 +21,15 @@ const FLOATING_ICONS = [
 
 export default function HeroSection() {
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Auto-advance slides
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+    }, SLIDE_DURATION);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleMouse = useCallback((e: MouseEvent) => {
     const cx = window.innerWidth / 2;
@@ -39,24 +54,46 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-      {/* Background Image with parallax */}
-      <motion.img
-        src={heroImage}
-        alt="Rucher au coucher du soleil"
-        className="absolute inset-0 w-full h-full object-cover"
-        loading="eager"
-        style={{
-          x: mouse.x * -15,
-          y: mouse.y * -10,
-          scale: 1.05,
-        }}
-      />
+      {/* Slider images */}
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={currentSlide}
+          src={SLIDES[currentSlide]}
+          alt="Rucher au coucher du soleil"
+          className="absolute inset-0 w-full h-full object-cover"
+          loading={currentSlide === 0 ? "eager" : "lazy"}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 1, scale: 1.05 }}
+          exit={{ opacity: 0, scale: 1 }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
+          style={{
+            x: mouse.x * -15,
+            y: mouse.y * -10,
+          }}
+        />
+      </AnimatePresence>
 
       {/* Dark overlay */}
       <div className="absolute inset-0 hero-overlay z-[5]" />
 
       {/* Canvas particles */}
       <HeroBackground />
+
+      {/* Slide indicators */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        {SLIDES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentSlide(i)}
+            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+              i === currentSlide
+                ? "bg-primary w-8"
+                : "bg-background/40 hover:bg-background/60"
+            }`}
+            aria-label={`Slide ${i + 1}`}
+          />
+        ))}
+      </div>
 
       {/* Floating icons */}
       {FLOATING_ICONS.map((icon, i) => (

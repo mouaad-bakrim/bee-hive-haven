@@ -141,11 +141,11 @@ export default function ChatbotWidget() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setOpen(true)}
-            className="fixed bottom-6 right-20 z-50 flex items-center gap-2 px-5 py-3 rounded-full shadow-xl honey-gradient text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity"
+            className="fixed bottom-6 right-20 z-50 flex items-center gap-2 px-5 py-3 rounded-full shadow-xl honey-gradient text-primary-foreground font-bold text-sm hover:scale-105 hover:shadow-2xl transition-all duration-300"
             aria-label="Ouvrir l'assistant"
           >
-            <span className="text-lg">💬</span>
-            Aide
+            <span className="text-xl">🐝</span>
+            Assistant
           </motion.button>
         )}
       </AnimatePresence>

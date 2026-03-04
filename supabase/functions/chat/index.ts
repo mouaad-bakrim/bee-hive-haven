@@ -1,24 +1,23 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
 serve(async (req) => {
 
-  // عرض الصفحة فالمتصفح
+  // عرض الموقع
   if (req.method === "GET") {
     return new Response(`
       <html>
       <head>
         <title>Bee Hive Haven 🐝</title>
       </head>
-      <body style="font-family:Arial;text-align:center;margin-top:50px">
-        <h1>🐝 Bee Hive Haven API</h1>
+
+      <body style="font-family:Arial;text-align:center;margin-top:60px">
+
+        <h1>🐝 Bee Hive Haven</h1>
+
         <p>Le serveur fonctionne correctement.</p>
-        <p>Utilisez POST / pour envoyer un message au chat AI.</p>
+
+        <p>API Chat disponible via POST.</p>
+
       </body>
       </html>
     `, {
@@ -26,36 +25,21 @@ serve(async (req) => {
     });
   }
 
-  // CORS
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+  // API Chat
+  if (req.method === "POST") {
+    const body = await req.json();
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: "API fonctionne",
+      data: body
+    }), {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
   }
 
-  try {
-    const { messages } = await req.json();
+  return new Response("Method not allowed", { status: 405 });
 
-    return new Response(
-      JSON.stringify({
-        reply: "API fonctionne 👍"
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json"
-        }
-      }
-    );
-
-  } catch (e) {
-    return new Response(
-      JSON.stringify({ error: "Erreur JSON" }),
-      {
-        status: 500,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json"
-        }
-      }
-    );
-  }
 });

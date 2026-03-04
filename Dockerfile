@@ -3,14 +3,13 @@ WORKDIR /app
 
 COPY package*.json ./
 RUN npm ci
-
 COPY . .
 RUN npm run build
 
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# SPA fallback (React Router)
+# SPA fallback for React Router
 RUN rm /etc/nginx/conf.d/default.conf
 RUN printf 'server {\n\
   listen 80;\n\

@@ -3,6 +3,7 @@ import { Clock, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Article } from "@/data/articles";
 import { categoryLabels, categoryColors } from "@/data/articles";
+import { useTimeAgo } from "@/hooks/useTimeAgo";
 
 interface Props {
   article: Article;
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function ArticleCard({ article, index = 0 }: Props) {
+  const timeAgo = useTimeAgo(article.date);
   return (
     <motion.article
       initial={{ opacity: 0, y: 20 }}
@@ -21,7 +23,7 @@ export default function ArticleCard({ article, index = 0 }: Props) {
         {/* Image */}
         <div className="relative aspect-video overflow-hidden">
           <img
-            src={article.coverImage}
+            src={article.coverImage || "https://placehold.co/800x450?text=🐝"}
             alt={article.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
@@ -42,9 +44,9 @@ export default function ArticleCard({ article, index = 0 }: Props) {
 
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1" title={new Date(article.date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}>
                 <Calendar className="w-3.5 h-3.5" />
-                {new Date(article.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                {timeAgo || new Date(article.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />

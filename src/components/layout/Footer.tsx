@@ -1,7 +1,14 @@
 import { Link } from "react-router-dom";
 import { Instagram, Facebook } from "lucide-react";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export default function Footer() {
+  const { data: settings } = useSiteSettings();
+  const siteName = settings?.site_name || "Coin des Apiculteurs";
+  const slogan = settings?.slogan || "Ruches, miel et passion — faisons grandir nos colonies ensemble.";
+  const instagramUrl = settings?.instagram_url || "";
+  const facebookUrl = settings?.facebook_url || "";
+
   return (
     <footer className="bg-foreground text-background/80 mt-16">
       <div className="container mx-auto px-4 py-12">
@@ -10,10 +17,10 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <span className="text-2xl">🐝</span>
-              <span className="font-heading font-bold text-lg text-background">Coin des Apiculteurs</span>
+              <span className="font-heading font-bold text-lg text-background">{siteName}</span>
             </div>
             <p className="text-sm text-background/60 leading-relaxed">
-              Ruches, miel et passion — faisons grandir nos colonies ensemble.
+              {slogan}
             </p>
           </div>
 
@@ -32,14 +39,18 @@ export default function Footer() {
           <div>
             <h4 className="font-heading font-bold text-background mb-3">Suivez-nous</h4>
             <div className="flex gap-3 mb-4">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all">
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all">
-                <Facebook className="w-4 h-4" />
-              </a>
+              {instagramUrl && (
+                <a href={instagramUrl} target="_blank" rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all">
+                  <Instagram className="w-4 h-4" />
+                </a>
+              )}
+              {facebookUrl && (
+                <a href={facebookUrl} target="_blank" rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all">
+                  <Facebook className="w-4 h-4" />
+                </a>
+              )}
             </div>
             <p className="text-xs text-background/40">
               Inscrivez-vous à la newsletter pour ne rien rater !
@@ -49,7 +60,7 @@ export default function Footer() {
 
         <div className="mt-10 pt-6 border-t border-background/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-background/40">
-            © 2024 Coin des Apiculteurs | All Rights Reserved
+            © {new Date().getFullYear()} {siteName} | All Rights Reserved
           </p>
           <div className="flex gap-4 text-xs text-background/40">
             <Link to="/confidentialite" className="hover:text-primary transition-colors">Confidentialité</Link>

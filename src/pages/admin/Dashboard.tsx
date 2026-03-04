@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { FileText, Eye, Star, Clock, TrendingUp, BarChart3, AlertTriangle, Lightbulb } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { getArticlesAdmin } from "@/features/articles/articles.api";
+import { useToast } from "@/hooks/use-toast";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 
 interface Post {
@@ -55,15 +56,26 @@ function AnimatedCounter({ value, duration = 1 }: { value: number; duration?: nu
 export default function Dashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    async function load() {
-      const { data } = await supabase.from("posts").select("*").order("created_at", { ascending: false });
-      if (data) setPosts(data as Post[]);
-      setLoading(false);
-    }
-    load();
-  }, []);
+    let cancelled = false;
+    setLoading(true);
+    getArticlesAdmin()
+      .then((data) => {
+        if (!cancelled) setPosts(data as Post[]);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          toast({ title: "Erreur", description: err?.message || "Impossible de charger les articles.", variant: "destructive" });
+          setPosts([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [toast]);
 
   const stats = useMemo<Stats | null>(() => {
     if (loading) return null;

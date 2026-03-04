@@ -1,12 +1,22 @@
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import ArticleCard from "@/components/home/ArticleCard";
-import { articles } from "@/data/articles";
+import { useEffect } from "react";
+import type { Article } from "@/data/articles";
+import { useToast } from "@/hooks/use-toast";
+import { useRealtimePublishedArticles } from "@/hooks/useRealtimePublishedArticles";
 
 export default function SearchPage() {
   const [params] = useSearchParams();
   const query = params.get("q") || "";
+  const { toast } = useToast();
+  const { articles, loading, error } = useRealtimePublishedArticles({ orderBy: "published_at" });
+
+  useEffect(() => {
+    if (error) toast({ title: "Erreur", description: error, variant: "destructive" });
+  }, [error, toast]);
 
   const results = query.trim()
     ? articles.filter(
@@ -26,15 +36,23 @@ export default function SearchPage() {
       <h1 className="font-heading text-3xl font-bold mb-2">
         Résultats pour « {query} »
       </h1>
-      <p className="text-muted-foreground mb-8">{results.length} résultat{results.length > 1 ? "s" : ""}</p>
+      <p className="text-muted-foreground mb-8">
+        {loading && query.trim() ? "…" : `${results.length} résultat${results.length !== 1 ? "s" : ""}`}
+      </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {results.map((a, i) => (
-          <ArticleCard key={a.id} article={a} index={i} />
-        ))}
-      </div>
+      {loading && query.trim() ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {results.map((a, i) => (
+            <ArticleCard key={a.id} article={a} index={i} />
+          ))}
+        </div>
+      )}
 
-      {results.length === 0 && query && (
+      {!loading && results.length === 0 && query && (
         <div className="text-center py-16 text-muted-foreground">
           <p className="text-4xl mb-4">🐝</p>
           <p>Aucun résultat trouvé. Essayez d'autres mots-clés !</p>

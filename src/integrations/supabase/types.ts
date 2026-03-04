@@ -145,6 +145,41 @@ export type Database = {
         }
         Relationships: []
       }
+      comments: {
+        Row: {
+          id: string
+          article_id: string
+          author_name: string
+          author_email: string | null
+          content: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          article_id: string
+          author_name: string
+          author_email?: string | null
+          content: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          article_id?: string
+          author_name?: string
+          author_email?: string | null
+          content?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, Menu, X, Instagram, Facebook } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const navItems = [
   { label: "Accueil", path: "/" },
@@ -17,6 +18,10 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const { data: settings } = useSiteSettings();
+  const siteName = settings?.site_name || "Coin des Apiculteurs";
+  const instagramUrl = settings?.instagram_url || "";
+  const facebookUrl = settings?.facebook_url || "";
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +39,7 @@ export default function Header() {
         <Link to="/" className="flex items-center gap-2 flex-shrink-0">
           <span className="text-2xl">🐝</span>
           <span className="font-heading font-bold text-lg text-foreground hidden sm:inline">
-            Coin des Apiculteurs
+            {siteName}
           </span>
         </Link>
 
@@ -63,14 +68,18 @@ export default function Header() {
           </button>
 
           {/* Social */}
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
-            className="hidden md:flex p-2 rounded-lg text-foreground/60 hover:text-primary hover:bg-primary/5 transition-colors">
-            <Instagram className="w-4 h-4" />
-          </a>
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
-            className="hidden md:flex p-2 rounded-lg text-foreground/60 hover:text-primary hover:bg-primary/5 transition-colors">
-            <Facebook className="w-4 h-4" />
-          </a>
+          {instagramUrl && (
+            <a href={instagramUrl} target="_blank" rel="noopener noreferrer"
+              className="hidden md:flex p-2 rounded-lg text-foreground/60 hover:text-primary hover:bg-primary/5 transition-colors">
+              <Instagram className="w-4 h-4" />
+            </a>
+          )}
+          {facebookUrl && (
+            <a href={facebookUrl} target="_blank" rel="noopener noreferrer"
+              className="hidden md:flex p-2 rounded-lg text-foreground/60 hover:text-primary hover:bg-primary/5 transition-colors">
+              <Facebook className="w-4 h-4" />
+            </a>
+          )}
 
           {/* Mobile Menu Toggle */}
           <button
@@ -133,12 +142,16 @@ export default function Header() {
                 </Link>
               ))}
               <div className="flex items-center gap-3 pt-3 mt-2 border-t border-border">
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 text-foreground/60 hover:text-primary">
-                  <Instagram className="w-5 h-5" />
-                </a>
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 text-foreground/60 hover:text-primary">
-                  <Facebook className="w-5 h-5" />
-                </a>
+                {instagramUrl && (
+                  <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="p-2 text-foreground/60 hover:text-primary">
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                )}
+                {facebookUrl && (
+                  <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="p-2 text-foreground/60 hover:text-primary">
+                    <Facebook className="w-5 h-5" />
+                  </a>
+                )}
               </div>
             </nav>
           </motion.div>

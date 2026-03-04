@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Plus, Search, Pencil, Trash2, Eye } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { getArticlesAdmin, deleteArticle } from "@/features/articles/articles.api";
+import type { PostRow } from "@/features/articles/articles.api";
 
 const categories = ["all", "actualite", "sante", "cours", "histoires", "buzz"];
 const catLabels: Record<string, string> = {
@@ -18,7 +19,7 @@ const catLabels: Record<string, string> = {
 };
 
 export default function PostsList() {
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<PostRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
@@ -27,21 +28,30 @@ export default function PostsList() {
 
   const fetchPosts = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("posts")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setPosts(data || []);
-    setLoading(false);
+    try {
+      const data = await getArticlesAdmin();
+      setPosts(data);
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err?.message || "Impossible de charger les articles.", variant: "destructive" });
+      setPosts([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchPosts(); }, []);
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Supprimer "${title}" ?`)) return;
-    await supabase.from("posts").delete().eq("id", id);
-    toast({ title: "Article supprimé" });
-    fetchPosts();
+    try {
+      await deleteArticle(id);
+      toast({ title: "Article supprimé" });
+      fetchPosts();
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err?.message || "Suppression impossible", variant: "destructive" });
+    }
   };
 
   const filtered = posts.filter((p) => {

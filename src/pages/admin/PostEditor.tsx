@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Save, Send, Trash2, Eye, Loader2, Upload } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
+import { createArticle, updateArticle, deleteArticle } from "@/features/articles/articles.api";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,14 +68,16 @@ export default function PostEditor() {
   const [autoSlug, setAutoSlug] = useState(!isEdit);
 
   useEffect(() => {
-    if (!isEdit) return;
+    if (!isEdit || !id) return;
     supabase
       .from("posts")
       .select("*")
       .eq("id", id)
       .single()
-      .then(({ data }) => {
-        if (data) {
+      .then(({ data, error }) => {
+        if (error) {
+          toast({ title: "Erreur", description: error.message, variant: "destructive" });
+        } else if (data) {
           setForm({
             title: data.title,
             slug: data.slug,
@@ -90,8 +93,9 @@ export default function PostEditor() {
           });
         }
         setLoading(false);
-      });
-  }, [id, isEdit]);
+      })
+      .catch(() => setLoading(false));
+  }, [id, isEdit, toast]);
 
   const handleChange = (field: keyof PostForm, value: any) => {
     setForm((prev) => {
@@ -125,50 +129,63 @@ export default function PostEditor() {
       return;
     }
     setSaving(true);
-    const payload = {
-      title: form.title,
-      slug: form.slug,
-      excerpt: form.excerpt,
-      content: form.content,
-      category: form.category,
-      tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
-      cover_url: form.cover_url,
-      featured: form.featured,
-      status: status || form.status,
-      meta_title: form.meta_title,
-      meta_description: form.meta_description,
-      author_id: user?.id,
-      ...(status === "published" && !isEdit ? { published_at: new Date().toISOString() } : {}),
-    };
+    const effectiveStatus = (status ?? form.status) as "draft" | "published";
+    const publishedAt =
+      effectiveStatus === "draft" ? null : effectiveStatus === "published" ? new Date().toISOString() : undefined;
 
-    if (isEdit) {
-      if (status === "published" && form.status !== "published") {
-        (payload as any).published_at = new Date().toISOString();
-      }
-      const { error } = await supabase.from("posts").update(payload).eq("id", id);
-      if (error) {
-        toast({ title: "Erreur", description: error.message, variant: "destructive" });
-      } else {
+    try {
+      if (isEdit && id) {
+        await updateArticle(id, {
+          title: form.title,
+          slug: form.slug,
+          excerpt: form.excerpt,
+          content: form.content,
+          category: form.category,
+          tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
+          cover_url: form.cover_url,
+          featured: form.featured,
+          status: effectiveStatus,
+          meta_title: form.meta_title,
+          meta_description: form.meta_description,
+          ...(publishedAt !== undefined && { published_at: publishedAt }),
+        });
         toast({ title: "Article mis à jour ✓" });
-        if (status) setForm((p) => ({ ...p, status }));
-      }
-    } else {
-      const { error } = await supabase.from("posts").insert(payload);
-      if (error) {
-        toast({ title: "Erreur", description: error.message, variant: "destructive" });
+        setForm((p) => ({ ...p, status: effectiveStatus }));
       } else {
+        await createArticle({
+          title: form.title,
+          slug: form.slug,
+          excerpt: form.excerpt,
+          content: form.content,
+          category: form.category,
+          tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
+          cover_url: form.cover_url || undefined,
+          featured: form.featured,
+          status: effectiveStatus,
+          meta_title: form.meta_title || undefined,
+          meta_description: form.meta_description || undefined,
+          author_id: user?.id ?? undefined,
+          published_at: publishedAt ?? null,
+        });
         toast({ title: "Article créé ✓" });
         navigate("/admin/posts");
       }
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err?.message || "Enregistrement impossible", variant: "destructive" });
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm("Supprimer définitivement cet article ?")) return;
-    await supabase.from("posts").delete().eq("id", id);
-    toast({ title: "Article supprimé" });
-    navigate("/admin/posts");
+    if (!confirm("Supprimer définitivement cet article ?") || !id) return;
+    try {
+      await deleteArticle(id);
+      toast({ title: "Article supprimé" });
+      navigate("/admin/posts");
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err?.message || "Suppression impossible", variant: "destructive" });
+    }
   };
 
   if (loading) {

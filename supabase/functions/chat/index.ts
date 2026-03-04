@@ -36,7 +36,11 @@ serve(async (req) => {
       405
     );
   }
-
+  if (req.method === "GET") {
+    return new Response("OK ✅ API is running. Use POST / with JSON { messages: [...] }", {
+      headers: { ...corsHeaders, "Content-Type": "text/plain" },
+    });
+  }
   try {
     // Safe JSON parsing (avoids "Unexpected end of JSON input")
     const raw = await req.text();

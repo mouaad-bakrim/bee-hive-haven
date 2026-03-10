@@ -103,6 +103,107 @@ export type Database = {
           },
         ]
       }
+      forum_answers: {
+        Row: {
+          author_email: string | null
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          question_id: string
+          votes_down: number
+          votes_up: number
+        }
+        Insert: {
+          author_email?: string | null
+          author_name: string
+          content: string
+          created_at?: string
+          id?: string
+          question_id: string
+          votes_down?: number
+          votes_up?: number
+        }
+        Update: {
+          author_email?: string | null
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          votes_down?: number
+          votes_up?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "forum_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_questions: {
+        Row: {
+          author_email: string | null
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          slug: string
+          status: string
+          title: string
+        }
+        Insert: {
+          author_email?: string | null
+          author_name: string
+          content: string
+          created_at?: string
+          id?: string
+          slug: string
+          status?: string
+          title: string
+        }
+        Update: {
+          author_email?: string | null
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          slug?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      glossary_terms: {
+        Row: {
+          created_at: string
+          definition: string
+          id: string
+          letter: string
+          slug: string
+          term: string
+        }
+        Insert: {
+          created_at?: string
+          definition: string
+          id?: string
+          letter: string
+          slug: string
+          term: string
+        }
+        Update: {
+          created_at?: string
+          definition?: string
+          id?: string
+          letter?: string
+          slug?: string
+          term?: string
+        }
+        Relationships: []
+      }
       post_views_daily: {
         Row: {
           count: number | null
@@ -195,31 +296,46 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
           display_name: string | null
           id: string
+          instagram_url: string | null
+          twitter_url: string | null
           user_id: string
+          website_url: string | null
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          instagram_url?: string | null
+          twitter_url?: string | null
           user_id: string
+          website_url?: string | null
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          instagram_url?: string | null
+          twitter_url?: string | null
           user_id?: string
+          website_url?: string | null
         }
         Relationships: []
       }
       site_settings: {
         Row: {
           address: string | null
+          animation_speed: string | null
           articles_per_page: number | null
+          border_radius_preset: string | null
+          card_style: string | null
           comments_enabled: boolean | null
           comments_moderation: boolean | null
           contact_email: string | null
@@ -227,6 +343,7 @@ export type Database = {
           facebook_enabled: boolean | null
           facebook_url: string | null
           favicon_url: string | null
+          font_family: string | null
           google_analytics_id: string | null
           hero_cta_text: string | null
           hero_image_url: string | null
@@ -256,6 +373,7 @@ export type Database = {
           show_share_buttons: boolean | null
           site_name: string | null
           slogan: string | null
+          theme_preset: string | null
           tiktok_enabled: boolean | null
           tiktok_url: string | null
           twitter_enabled: boolean | null
@@ -269,7 +387,10 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          animation_speed?: string | null
           articles_per_page?: number | null
+          border_radius_preset?: string | null
+          card_style?: string | null
           comments_enabled?: boolean | null
           comments_moderation?: boolean | null
           contact_email?: string | null
@@ -277,6 +398,7 @@ export type Database = {
           facebook_enabled?: boolean | null
           facebook_url?: string | null
           favicon_url?: string | null
+          font_family?: string | null
           google_analytics_id?: string | null
           hero_cta_text?: string | null
           hero_image_url?: string | null
@@ -306,6 +428,7 @@ export type Database = {
           show_share_buttons?: boolean | null
           site_name?: string | null
           slogan?: string | null
+          theme_preset?: string | null
           tiktok_enabled?: boolean | null
           tiktok_url?: string | null
           twitter_enabled?: boolean | null
@@ -319,7 +442,10 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          animation_speed?: string | null
           articles_per_page?: number | null
+          border_radius_preset?: string | null
+          card_style?: string | null
           comments_enabled?: boolean | null
           comments_moderation?: boolean | null
           contact_email?: string | null
@@ -327,6 +453,7 @@ export type Database = {
           facebook_enabled?: boolean | null
           facebook_url?: string | null
           favicon_url?: string | null
+          font_family?: string | null
           google_analytics_id?: string | null
           hero_cta_text?: string | null
           hero_image_url?: string | null
@@ -356,6 +483,7 @@ export type Database = {
           show_share_buttons?: boolean | null
           site_name?: string | null
           slogan?: string | null
+          theme_preset?: string | null
           tiktok_enabled?: boolean | null
           tiktok_url?: string | null
           twitter_enabled?: boolean | null
@@ -366,6 +494,30 @@ export type Database = {
           whatsapp_number?: string | null
           youtube_enabled?: boolean | null
           youtube_url?: string | null
+        }
+        Relationships: []
+      }
+      subscribers: {
+        Row: {
+          confirmed: boolean
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+        }
+        Insert: {
+          confirmed?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+        }
+        Update: {
+          confirmed?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
         }
         Relationships: []
       }
@@ -400,6 +552,10 @@ export type Database = {
         Returns: boolean
       }
       increment_post_view: { Args: { p_post_id: string }; Returns: undefined }
+      vote_answer: {
+        Args: { p_answer_id: string; p_direction: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"

@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, FileText, Image, Settings, LogOut, Menu, X, Plus, ChevronLeft, Loader2,
-  BarChart2, MessageSquare, Tag, Users, Bell,
+  BarChart2, MessageSquare, Tag, Users, Bell, Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -72,6 +72,7 @@ export default function AdminLayout() {
       label: "Audience",
       items: [
         { label: "Analytics", path: "/admin/analytics", icon: BarChart2 },
+        { label: "Newsletter", path: "/admin/subscribers", icon: Mail },
         { label: "Utilisateurs", path: "/admin/users", icon: Users },
       ],
     },

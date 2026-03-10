@@ -204,7 +204,9 @@ export default function ArticlePage() {
             <div className="mt-10 pt-6 border-t border-border">
               <div className="flex flex-wrap gap-2">
                 {article.tags.map((tag) => (
-                  <span key={tag} className="tag-badge">#{tag}</span>
+                  <Link key={tag} to={`/tag/${tag.toLowerCase().replace(/\s+/g, "-")}`} className="tag-badge hover:bg-primary hover:text-primary-foreground transition-colors">
+                    #{tag}
+                  </Link>
                 ))}
               </div>
             </div>

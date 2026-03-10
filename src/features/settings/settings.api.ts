@@ -47,6 +47,11 @@ export interface SiteSettings {
   articles_per_page: number | null;
   maintenance_mode: boolean | null;
   public_registration: boolean | null;
+  theme_preset: string | null;
+  font_family: string | null;
+  border_radius_preset: string | null;
+  card_style: string | null;
+  animation_speed: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { TrendingUp, Eye, Instagram, Facebook, Youtube, Twitter } from "lucide-react";
+import { TrendingUp, Eye, Instagram, Facebook, Youtube, Twitter, Tag } from "lucide-react";
 import HeroSection from "@/components/home/HeroSection";
 import ArticleCard from "@/components/home/ArticleCard";
+import NewsletterForm from "@/components/NewsletterForm";
 import type { Article } from "@/data/articles";
 import { useToast } from "@/hooks/use-toast";
 import { useRealtimePublishedArticles } from "@/hooks/useRealtimePublishedArticles";
@@ -44,6 +45,12 @@ export default function Index() {
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const paginated = filtered.slice((page - 1) * itemsPerPage, page * itemsPerPage);
   const popular = useMemo(() => [...articles].sort((a, b) => b.views - a.views).slice(0, 5), [articles]);
+  
+  const allTags = useMemo(() => {
+    const counts: Record<string, number> = {};
+    articles.forEach((a) => a.tags.forEach((t) => { counts[t] = (counts[t] || 0) + 1; }));
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 15);
+  }, [articles]);
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -177,6 +184,24 @@ export default function Index() {
                   ))}
                 </div>
               </div>
+              {allTags.length > 0 && (
+                <div className="bg-card rounded-xl border border-border p-5">
+                  <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-primary" /> Tags populaires
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {allTags.map(([tag, count]) => (
+                      <Link
+                        key={tag}
+                        to={`/tag/${tag.toLowerCase().replace(/\s+/g, "-")}`}
+                        className="px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-medium hover:bg-primary hover:text-primary-foreground transition-all"
+                      >
+                        #{tag} <span className="text-muted-foreground ml-1">{count}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
               {socialLinks.length > 0 && (
                 <div className="bg-card rounded-xl border border-border p-5 text-center">
                   <h3 className="font-heading font-bold text-foreground mb-3">📱 Suivez-nous</h3>
@@ -189,6 +214,13 @@ export default function Index() {
                     ))}
                   </div>
                 </div>
+              )}
+              {showNewsletter && (
+                <NewsletterForm
+                  title={settings?.newsletter_title || "Newsletter 🐝"}
+                  subtitle={settings?.newsletter_subtitle || "Recevez nos articles par email."}
+                  variant="card"
+                />
               )}
             </div>
           </aside>

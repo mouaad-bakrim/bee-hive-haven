@@ -27,6 +27,9 @@ export default function Header() {
   const navItems = [
     { label: "Accueil", path: "/" },
     ...(categories ?? []).map((c) => ({ label: c.name, path: `/categorie/${c.slug}` })),
+    { label: "Communauté", path: "/communaute" },
+    { label: "Glossaire", path: "/glossaire" },
+    { label: "Calendrier", path: "/calendrier" },
   ];
 
   const socialLinks = [

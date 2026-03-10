@@ -39,6 +39,26 @@ function BackToTop() {
   );
 }
 
+const THEME_COLORS: Record<string, string> = {
+  amber: "38 92% 50%",
+  green: "142 71% 45%",
+  blue: "217 91% 60%",
+  dark: "220 9% 46%",
+};
+
+const RADIUS_MAP: Record<string, string> = {
+  none: "0",
+  rounded: "0.5rem",
+  full: "1rem",
+};
+
+const SPEED_MAP: Record<string, string> = {
+  fast: "0.15s",
+  normal: "0.3s",
+  slow: "0.6s",
+  none: "0s",
+};
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { data: settings } = useSiteSettings();
   const showChatbot = settings?.show_chatbot !== false;
@@ -48,6 +68,41 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       document.title = settings.site_name;
     }
   }, [settings?.site_name]);
+
+  // Apply theme settings as CSS variables
+  useEffect(() => {
+    if (!settings) return;
+    const root = document.documentElement;
+
+    // Color palette
+    const preset = settings.theme_preset ?? "amber";
+    if (THEME_COLORS[preset]) {
+      root.style.setProperty("--primary", THEME_COLORS[preset]);
+    }
+
+    // Font family
+    const font = settings.font_family ?? "sans";
+    root.style.setProperty(
+      "--font-heading",
+      font === "serif" ? "'Georgia', 'Times New Roman', serif" : "'Inter', system-ui, sans-serif"
+    );
+
+    // Border radius
+    const radius = settings.border_radius_preset ?? "rounded";
+    if (RADIUS_MAP[radius]) {
+      root.style.setProperty("--radius", RADIUS_MAP[radius]);
+    }
+
+    // Animation speed
+    const speed = settings.animation_speed ?? "normal";
+    if (SPEED_MAP[speed]) {
+      root.style.setProperty("--animation-speed", SPEED_MAP[speed]);
+    }
+
+    // Card style
+    const cardStyle = settings.card_style ?? "shadow";
+    root.dataset.cardStyle = cardStyle;
+  }, [settings]);
 
   return (
     <div className="min-h-screen flex flex-col">

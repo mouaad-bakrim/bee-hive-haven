@@ -17,6 +17,11 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const Search = lazy(() => import("./pages/Search"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./pages/Login"));
+const Community = lazy(() => import("./pages/Community"));
+const TagPage = lazy(() => import("./pages/TagPage"));
+const Glossary = lazy(() => import("./pages/Glossary"));
+const BeekeepingCalendar = lazy(() => import("./pages/BeekeepingCalendar"));
+const AuthorPage = lazy(() => import("./pages/AuthorPage"));
 const AdminLayout = lazy(() => import("@/components/admin/AdminLayout"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const PostsList = lazy(() => import("./pages/admin/PostsList"));
@@ -28,6 +33,7 @@ const Comments = lazy(() => import("./pages/admin/Comments"));
 const Categories = lazy(() => import("./pages/admin/Categories"));
 const UsersPage = lazy(() => import("./pages/admin/Users"));
 const Notifications = lazy(() => import("./pages/admin/Notifications"));
+const Subscribers = lazy(() => import("./pages/admin/Subscribers"));
 
 const queryClient = new QueryClient();
 
@@ -52,6 +58,11 @@ const App = () => (
               <Route element={<Layout><Index /></Layout>} path="/" />
               <Route element={<Layout><ArticlePage /></Layout>} path="/article/:slug" />
               <Route element={<Layout><CategoryPage /></Layout>} path="/categorie/:slug" />
+              <Route element={<Layout><Community /></Layout>} path="/communaute" />
+              <Route element={<Layout><TagPage /></Layout>} path="/tag/:slug" />
+              <Route element={<Layout><Glossary /></Layout>} path="/glossaire" />
+              <Route element={<Layout><BeekeepingCalendar /></Layout>} path="/calendrier" />
+              <Route element={<Layout><AuthorPage /></Layout>} path="/auteur/:id" />
               <Route element={<Layout><About /></Layout>} path="/a-propos" />
               <Route element={<Layout><Contact /></Layout>} path="/contact" />
               <Route element={<Layout><Privacy /></Layout>} path="/confidentialite" />
@@ -71,6 +82,7 @@ const App = () => (
                 <Route path="categories" element={<Categories />} />
                 <Route path="users" element={<UsersPage />} />
                 <Route path="notifications" element={<Notifications />} />
+                <Route path="subscribers" element={<Subscribers />} />
               </Route>
 
               <Route path="*" element={<Layout><NotFound /></Layout>} />

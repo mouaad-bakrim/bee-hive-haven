@@ -84,6 +84,7 @@ const App = () => (
                 <Route path="users" element={<UsersPage />} />
                 <Route path="notifications" element={<Notifications />} />
                 <Route path="subscribers" element={<Subscribers />} />
+                <Route path="communaute" element={<AdminCommunity />} />
               </Route>
 
               <Route path="*" element={<Layout><NotFound /></Layout>} />

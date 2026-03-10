@@ -29,15 +29,21 @@ export default function AdminLayout() {
   const location = useLocation();
   const [pendingComments, setPendingComments] = useState(0);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
+  const [pendingQuestions, setPendingQuestions] = useState(0);
+  const [subscriberCount, setSubscriberCount] = useState(0);
 
   useEffect(() => {
     const fetchBadges = async () => {
-      const [{ count: cCount }, { count: nCount }] = await Promise.all([
+      const [{ count: cCount }, { count: nCount }, { count: qCount }, { count: sCount }] = await Promise.all([
         (supabase as any).from("comments").select("*", { count: "exact", head: true }).eq("status", "pending"),
         (supabase as any).from("admin_notifications").select("*", { count: "exact", head: true }).eq("read", false),
+        (supabase as any).from("forum_questions").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        (supabase as any).from("subscribers").select("*", { count: "exact", head: true }),
       ]);
       setPendingComments(cCount ?? 0);
       setUnreadNotifs(nCount ?? 0);
+      setPendingQuestions(qCount ?? 0);
+      setSubscriberCount(sCount ?? 0);
     };
     if (user && isAdmin) fetchBadges();
   }, [user, isAdmin, location.pathname]);

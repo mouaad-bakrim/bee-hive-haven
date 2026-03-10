@@ -34,6 +34,7 @@ const Categories = lazy(() => import("./pages/admin/Categories"));
 const UsersPage = lazy(() => import("./pages/admin/Users"));
 const Notifications = lazy(() => import("./pages/admin/Notifications"));
 const Subscribers = lazy(() => import("./pages/admin/Subscribers"));
+const AdminCommunity = lazy(() => import("./pages/admin/AdminCommunity"));
 
 const queryClient = new QueryClient();
 

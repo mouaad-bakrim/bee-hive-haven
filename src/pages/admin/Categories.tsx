@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, GripVertical, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, AlertTriangle, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { categoriesQueryKey } from "@/hooks/useCategories";
 import {
   AlertDialog,
@@ -30,14 +30,35 @@ interface Category {
 function slugify(text: string) {
   return text
     .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
+    .trim()
+    .replace(/[àâä]/g, "a")
+    .replace(/[éèêë]/g, "e")
+    .replace(/[îï]/g, "i")
+    .replace(/[ôö]/g, "o")
+    .replace(/[ùûü]/g, "u")
+    .replace(/[ç]/g, "c")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
     .replace(/(^-|-$)/g, "");
 }
 
+async function fetchCategoriesWithCounts(): Promise<Category[]> {
+  const [{ data: cats, error }, { data: posts }] = await Promise.all([
+    supabase.from("categories").select("*").order("sort_order", { ascending: true }),
+    supabase.from("posts").select("category"),
+  ]);
+  if (error) throw error;
+  const counts: Record<string, number> = {};
+  (posts ?? []).forEach((p) => {
+    counts[p.category] = (counts[p.category] || 0) + 1;
+  });
+  return (cats ?? []).map((c) => ({
+    ...c,
+    _count: counts[c.slug] || counts[c.name] || 0,
+  }));
+}
+
 export default function Categories() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -45,66 +66,78 @@ export default function Categories() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: categoriesQueryKey });
+  const { data: categories = [], isLoading: loading } = useQuery({
+    queryKey: ["admin-categories"],
+    queryFn: fetchCategoriesWithCounts,
+  });
 
-  const fetchCategories = async () => {
-    setLoading(true);
-    const { data, error } = await supabase.from("categories").select("*").order("sort_order", { ascending: true });
-    if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
-      setLoading(false);
-      return;
-    }
-    const { data: posts } = await supabase.from("posts").select("category");
-    const counts: Record<string, number> = {};
-    (posts ?? []).forEach((p) => { counts[p.category] = (counts[p.category] || 0) + 1; });
-    setCategories((data ?? []).map((c) => ({ ...c, _count: counts[c.slug] || counts[c.name] || 0 })));
-    setLoading(false);
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
+    queryClient.invalidateQueries({ queryKey: categoriesQueryKey });
   };
 
-  useEffect(() => { fetchCategories(); }, []);
+  const addMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const slug = slugify(name);
+      const { data, error } = await supabase
+        .from("categories")
+        .insert({ name, slug, sort_order: categories.length })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      setNewName("");
+      invalidateAll();
+      toast({ title: "Catégorie ajoutée ✅" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Erreur lors de l'ajout", description: err.message, variant: "destructive" });
+    },
+  });
 
-  const addCategory = async () => {
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      const slug = slugify(name);
+      const { error } = await supabase.from("categories").update({ name, slug }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setEditingId(null);
+      invalidateAll();
+      toast({ title: "Catégorie modifiée ✅" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("categories").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setDeleteTarget(null);
+      invalidateAll();
+      toast({ title: "Catégorie supprimée ✅" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const handleAdd = () => {
     const name = newName.trim();
     if (!name) return;
-    const slug = slugify(name);
-    const { error } = await supabase.from("categories").insert({ name, slug, sort_order: categories.length });
-    if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
-    } else {
-      setNewName("");
-      fetchCategories();
-      invalidate();
-      toast({ title: "Catégorie ajoutée ✅" });
-    }
+    addMutation.mutate(name);
   };
 
-  const updateCategory = async (id: string) => {
+  const handleUpdate = (id: string) => {
     const name = editName.trim();
     if (!name) return;
-    const slug = slugify(name);
-    const { error } = await supabase.from("categories").update({ name, slug }).eq("id", id);
-    if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
-    } else {
-      setEditingId(null);
-      fetchCategories();
-      invalidate();
-      toast({ title: "Catégorie modifiée ✅" });
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-    const { error } = await supabase.from("categories").delete().eq("id", deleteTarget.id);
-    if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
-    } else {
-      fetchCategories();
-      invalidate();
-      toast({ title: "Catégorie supprimée ✅" });
-    }
-    setDeleteTarget(null);
+    updateMutation.mutate({ id, name });
   };
 
   return (
@@ -116,10 +149,14 @@ export default function Categories() {
           placeholder="Nouvelle catégorie..."
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addCategory()}
+          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
           className="max-w-xs"
         />
-        <Button onClick={addCategory} className="honey-gradient text-primary-foreground gap-1.5">
+        <Button
+          onClick={handleAdd}
+          disabled={addMutation.isPending || !newName.trim()}
+          className="honey-gradient text-primary-foreground gap-1.5"
+        >
           <Plus className="w-4 h-4" /> Ajouter
         </Button>
       </div>
@@ -139,7 +176,9 @@ export default function Categories() {
             <tbody className="divide-y divide-border">
               {loading
                 ? Array.from({ length: 3 }).map((_, i) => (
-                    <tr key={i}><td colSpan={5} className="p-4"><Skeleton className="h-8 w-full" /></td></tr>
+                    <tr key={i}>
+                      <td colSpan={5} className="p-4"><Skeleton className="h-8 w-full" /></td>
+                    </tr>
                   ))
                 : categories.map((cat) => (
                     <tr key={cat.id} className="hover:bg-secondary/30 transition-colors">
@@ -148,14 +187,24 @@ export default function Categories() {
                       </td>
                       <td className="px-4 py-3">
                         {editingId === cat.id ? (
-                          <Input
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && updateCategory(cat.id)}
-                            onBlur={() => updateCategory(cat.id)}
-                            autoFocus
-                            className="h-8 max-w-[200px]"
-                          />
+                          <div className="flex items-center gap-1">
+                            <Input
+                              value={editName}
+                              onChange={(e) => setEditName(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleUpdate(cat.id);
+                                if (e.key === "Escape") setEditingId(null);
+                              }}
+                              autoFocus
+                              className="h-8 max-w-[200px]"
+                            />
+                            <Button size="icon" variant="ghost" onClick={() => handleUpdate(cat.id)} disabled={updateMutation.isPending}>
+                              <Check className="w-4 h-4 text-green-500" />
+                            </Button>
+                            <Button size="icon" variant="ghost" onClick={() => setEditingId(null)}>
+                              <X className="w-4 h-4 text-muted-foreground" />
+                            </Button>
+                          </div>
                         ) : (
                           <span className="font-medium text-foreground">{cat.name}</span>
                         )}
@@ -164,10 +213,20 @@ export default function Categories() {
                       <td className="px-4 py-3 text-right text-muted-foreground">{cat._count || 0}</td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button size="icon" variant="ghost" onClick={() => { setEditingId(cat.id); setEditName(cat.name); }} aria-label="Modifier">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => { setEditingId(cat.id); setEditName(cat.name); }}
+                            aria-label="Modifier"
+                          >
                             <Pencil className="w-4 h-4 text-primary" />
                           </Button>
-                          <Button size="icon" variant="ghost" onClick={() => setDeleteTarget(cat)} aria-label="Supprimer">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => setDeleteTarget(cat)}
+                            aria-label="Supprimer"
+                          >
                             <Trash2 className="w-4 h-4 text-destructive" />
                           </Button>
                         </div>
@@ -185,7 +244,6 @@ export default function Categories() {
         )}
       </div>
 
-      {/* Delete confirmation dialog */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -203,7 +261,11 @@ export default function Categories() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteMutation.isPending}
+            >
               Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>

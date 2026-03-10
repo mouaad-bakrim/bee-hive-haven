@@ -232,6 +232,37 @@ export default function AdminSettings() {
           />
         </div>
 
+        {/* ── Language ── */}
+        {matchSection("langue language français english") && (
+          <SectionCard
+            id="language"
+            icon={<Globe className="w-5 h-5" />}
+            title="🌍 Langue du site"
+            description="Choisissez la langue de l'interface publique"
+            saving={savingSection === "language"}
+            dirty={isDirty(["language" as keyof Fields])}
+            onSave={() => handleSave("language", ["language" as keyof Fields])}
+          >
+            <div className="flex gap-3">
+              {[
+                { id: "fr", label: "🇫🇷 Français" },
+                { id: "en", label: "🇬🇧 English" },
+              ].map((lang) => (
+                <button
+                  key={lang.id}
+                  type="button"
+                  onClick={() => set("language" as any, lang.id)}
+                  className={`px-6 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                    (f as any).language === lang.id ? "border-primary ring-2 ring-primary/20 bg-primary/5" : "border-border hover:border-primary/40"
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+          </SectionCard>
+        )}
+
         {/* ── General ── */}
         {matchSection("général nom site slogan email contact description") && (
           <SectionCard

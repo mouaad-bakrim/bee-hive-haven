@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Instagram, Facebook, Youtube, Twitter } from "lucide-react";
 import HeroBackground from "./HeroBackground";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useTranslation } from "@/hooks/useTranslation";
 import heroApiary from "@/assets/hero-apiary.jpg";
 import heroHoneycomb from "@/assets/hero-honeycomb.jpg";
 import heroBeekeeper from "@/assets/hero-beekeeper.jpg";
@@ -32,10 +33,11 @@ export default function HeroSection() {
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const [currentSlide, setCurrentSlide] = useState(0);
   const { data: settings } = useSiteSettings();
+  const { t } = useTranslation();
 
-  const heroTitle = settings?.hero_title || "Bienvenue au Coin des Apiculteurs 🐝";
-  const heroSubtitle = settings?.hero_subtitle || settings?.slogan || "Ici, on parle ruches, miel et passion";
-  const ctaText = settings?.hero_cta_text || "Découvrir les articles";
+  const heroTitle = settings?.hero_title || t("hero_title");
+  const heroSubtitle = settings?.hero_subtitle || t("hero_subtitle");
+  const ctaText = settings?.hero_cta_text || t("hero_cta");
   const showBeeAnimations = settings?.show_bee_animations !== false;
 
   const slides = DEFAULT_SLIDES;

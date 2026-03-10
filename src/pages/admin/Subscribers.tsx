@@ -1,4 +1,4 @@
-import { Loader2, Trash2, Mail, Users } from "lucide-react";
+import { Loader2, Trash2, Mail, Users, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -39,6 +39,23 @@ export default function Subscribers() {
     },
   });
 
+  const exportCSV = async () => {
+    const { data, error } = await supabase.from("subscribers").select("email, created_at").order("created_at", { ascending: false });
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      return;
+    }
+    const csv = "Email,Date\n" + (data ?? []).map((r) => `${r.email},${new Date(r.created_at).toLocaleDateString("fr-FR")}`).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `newsletter_abonnes_${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "Export CSV téléchargé ✅" });
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -46,6 +63,9 @@ export default function Subscribers() {
           <h1 className="font-heading text-2xl font-bold text-foreground">📬 Newsletter</h1>
           <p className="text-sm text-muted-foreground">{subs.length} abonné{subs.length > 1 ? "s" : ""}</p>
         </div>
+        <Button onClick={exportCSV} className="honey-gradient text-primary-foreground gap-1.5">
+          <Download className="w-4 h-4" /> Exporter CSV
+        </Button>
       </div>
 
       {isLoading ? (

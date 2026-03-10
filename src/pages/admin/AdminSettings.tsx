@@ -82,6 +82,7 @@ function ToggleRow({ label, description, checked, onChange }: { label: string; d
 
 /* ───── sections config ───── */
 const SECTIONS = [
+  { id: "language", label: "Langue", icon: <Globe className="w-4 h-4" /> },
   { id: "general", label: "Général", icon: <Globe className="w-4 h-4" /> },
   { id: "appearance", label: "Apparence", icon: <Palette className="w-4 h-4" /> },
   { id: "theme", label: "Thème visuel", icon: <Brush className="w-4 h-4" /> },
@@ -159,7 +160,8 @@ export default function AdminSettings() {
       border_radius_preset: data.border_radius_preset ?? "rounded",
       card_style: data.card_style ?? "shadow",
       animation_speed: data.animation_speed ?? "normal",
-    };
+      language: (data as any).language ?? "fr",
+    } as any;
     setF(vals);
     setOriginal(vals);
   }, [data]);
@@ -230,6 +232,37 @@ export default function AdminSettings() {
             className="pl-9"
           />
         </div>
+
+        {/* ── Language ── */}
+        {matchSection("langue language français english") && (
+          <SectionCard
+            id="language"
+            icon={<Globe className="w-5 h-5" />}
+            title="🌍 Langue du site"
+            description="Choisissez la langue de l'interface publique"
+            saving={savingSection === "language"}
+            dirty={isDirty(["language" as keyof Fields])}
+            onSave={() => handleSave("language", ["language" as keyof Fields])}
+          >
+            <div className="flex gap-3">
+              {[
+                { id: "fr", label: "🇫🇷 Français" },
+                { id: "en", label: "🇬🇧 English" },
+              ].map((lang) => (
+                <button
+                  key={lang.id}
+                  type="button"
+                  onClick={() => set("language" as any, lang.id)}
+                  className={`px-6 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                    (f as any).language === lang.id ? "border-primary ring-2 ring-primary/20 bg-primary/5" : "border-border hover:border-primary/40"
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+          </SectionCard>
+        )}
 
         {/* ── General ── */}
         {matchSection("général nom site slogan email contact description") && (

@@ -4,6 +4,7 @@ import { Search, Menu, X, Instagram, Facebook, Youtube, Twitter } from "lucide-r
 import { motion, AnimatePresence } from "framer-motion";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useCategories } from "@/hooks/useCategories";
+import { useTranslation } from "@/hooks/useTranslation";
 
 function TikTokIcon({ className }: { className?: string }) {
   return (
@@ -20,16 +21,17 @@ export default function Header() {
   const navigate = useNavigate();
   const { data: settings } = useSiteSettings();
   const { data: categories } = useCategories();
+  const { t } = useTranslation();
 
-  const siteName = settings?.site_name || "Coin des Apiculteurs";
+  const siteName = settings?.site_name || t("site_name");
   const logoUrl = settings?.logo_url || "";
 
   const navItems = [
-    { label: "Accueil", path: "/" },
+    { label: t("nav_home"), path: "/" },
     ...(categories ?? []).map((c) => ({ label: c.name, path: `/categorie/${c.slug}` })),
-    { label: "Communauté", path: "/communaute" },
-    { label: "Glossaire", path: "/glossaire" },
-    { label: "Calendrier", path: "/calendrier" },
+    { label: t("nav_community"), path: "/communaute" },
+    { label: t("nav_glossary"), path: "/glossaire" },
+    { label: t("nav_calendar"), path: "/calendrier" },
   ];
 
   const socialLinks = [
@@ -72,7 +74,7 @@ export default function Header() {
 
         <div className="flex items-center gap-2">
           <button onClick={() => setSearchOpen(!searchOpen)}
-            className="p-2 rounded-lg text-foreground/60 hover:text-primary hover:bg-primary/5 transition-colors" aria-label="Rechercher">
+            className="p-2 rounded-lg text-foreground/60 hover:text-primary hover:bg-primary/5 transition-colors" aria-label={t("search")}>
             <Search className="w-5 h-5" />
           </button>
 
@@ -96,11 +98,11 @@ export default function Header() {
             className="border-t border-border overflow-hidden">
             <form onSubmit={handleSearch} className="container mx-auto px-4 py-3 flex gap-2">
               <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Rechercher un article…"
+                placeholder={t("search_article")}
                 className="flex-1 px-4 py-2 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm"
                 autoFocus />
               <button type="submit" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
-                Rechercher
+                {t("search_btn")}
               </button>
             </form>
           </motion.div>

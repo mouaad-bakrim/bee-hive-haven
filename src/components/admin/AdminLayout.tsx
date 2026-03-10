@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, FileText, Image, Settings, LogOut, Menu, X, Plus, ChevronLeft, Loader2,
-  BarChart2, MessageSquare, Tag, Users, Bell, Mail,
+  BarChart2, MessageSquare, Tag, Users, Bell, Mail, MessagesSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -29,15 +29,21 @@ export default function AdminLayout() {
   const location = useLocation();
   const [pendingComments, setPendingComments] = useState(0);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
+  const [pendingQuestions, setPendingQuestions] = useState(0);
+  const [subscriberCount, setSubscriberCount] = useState(0);
 
   useEffect(() => {
     const fetchBadges = async () => {
-      const [{ count: cCount }, { count: nCount }] = await Promise.all([
+      const [{ count: cCount }, { count: nCount }, { count: qCount }, { count: sCount }] = await Promise.all([
         (supabase as any).from("comments").select("*", { count: "exact", head: true }).eq("status", "pending"),
         (supabase as any).from("admin_notifications").select("*", { count: "exact", head: true }).eq("read", false),
+        (supabase as any).from("forum_questions").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        (supabase as any).from("subscribers").select("*", { count: "exact", head: true }),
       ]);
       setPendingComments(cCount ?? 0);
       setUnreadNotifs(nCount ?? 0);
+      setPendingQuestions(qCount ?? 0);
+      setSubscriberCount(sCount ?? 0);
     };
     if (user && isAdmin) fetchBadges();
   }, [user, isAdmin, location.pathname]);
@@ -72,7 +78,8 @@ export default function AdminLayout() {
       label: "Audience",
       items: [
         { label: "Analytics", path: "/admin/analytics", icon: BarChart2 },
-        { label: "Newsletter", path: "/admin/subscribers", icon: Mail },
+        { label: "Newsletter", path: "/admin/subscribers", icon: Mail, badge: subscriberCount },
+        { label: "Communauté", path: "/admin/communaute", icon: MessagesSquare, badge: pendingQuestions },
         { label: "Utilisateurs", path: "/admin/users", icon: Users },
       ],
     },

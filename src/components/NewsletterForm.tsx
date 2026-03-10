@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Mail, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Props {
   title?: string;
@@ -12,14 +12,18 @@ interface Props {
 }
 
 export default function NewsletterForm({
-  title = "Inscrivez-vous à la newsletter",
-  subtitle = "Recevez nos meilleurs articles directement dans votre boîte mail.",
+  title,
+  subtitle,
   variant = "card",
 }: Props) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
+
+  const displayTitle = title || t("newsletter_title");
+  const displaySubtitle = subtitle || t("newsletter_subtitle");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,16 +37,16 @@ export default function NewsletterForm({
       const { error } = await supabase.from("subscribers").insert({ email: trimmed });
       if (error) {
         if (error.code === "23505") {
-          toast({ title: "Vous êtes déjà inscrit(e) 🐝" });
+          toast({ title: t("newsletter_already") });
           setSuccess(true);
         } else throw error;
       } else {
         setSuccess(true);
-        toast({ title: "Inscription réussie ! 🎉" });
+        toast({ title: t("newsletter_success") });
       }
       setEmail("");
     } catch (err: any) {
-      toast({ title: "Erreur", description: err?.message, variant: "destructive" });
+      toast({ title: t("newsletter_error"), description: err?.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -51,9 +55,9 @@ export default function NewsletterForm({
   if (success) {
     return (
       <div className={variant === "card" ? "bg-card rounded-xl border border-border p-6 text-center" : "text-center"}>
-        <CheckCircle className="w-8 h-8 text-primary mx-auto mb-2" />
-        <p className="font-heading font-bold text-foreground">Merci pour votre inscription ! 🐝</p>
-        <p className="text-sm text-muted-foreground mt-1">Vous recevrez nos prochains articles par email.</p>
+        <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+        <p className="font-heading font-bold text-foreground">{t("newsletter_success")}</p>
+        <p className="text-sm text-muted-foreground mt-1">{t("newsletter_subtitle")}</p>
       </div>
     );
   }
@@ -61,16 +65,16 @@ export default function NewsletterForm({
   if (variant === "hero") {
     return (
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-        <Input
+        <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="votre@email.com"
-          className="bg-background/20 border-background/30 text-background placeholder:text-background/50 backdrop-blur-sm"
+          placeholder={t("newsletter_placeholder")}
+          className="flex-1 h-10 rounded-lg border-2 border-primary bg-background text-foreground px-4 py-2 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
         <Button type="submit" disabled={loading} className="honey-gradient text-primary-foreground gap-1.5 whitespace-nowrap">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-          S'inscrire
+          {t("newsletter_button")}
         </Button>
       </form>
     );
@@ -79,16 +83,16 @@ export default function NewsletterForm({
   return (
     <div className={variant === "card" ? "bg-card rounded-xl border border-border p-5" : ""}>
       <h3 className="font-heading font-bold text-foreground mb-1 flex items-center gap-2">
-        <Mail className="w-4 h-4 text-primary" /> {title}
+        <Mail className="w-4 h-4 text-primary" /> {displayTitle}
       </h3>
-      <p className="text-xs text-muted-foreground mb-3">{subtitle}</p>
+      <p className="text-xs text-muted-foreground mb-3">{displaySubtitle}</p>
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <Input
+        <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="votre@email.com"
-          className="flex-1"
+          placeholder={t("newsletter_placeholder")}
+          className="flex-1 h-10 rounded-lg border-2 border-primary bg-background text-foreground px-4 py-2 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
         <Button type="submit" disabled={loading} size="sm" className="honey-gradient text-primary-foreground gap-1">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}

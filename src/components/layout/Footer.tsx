@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Instagram, Facebook, Youtube, Twitter } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useTranslation } from "@/hooks/useTranslation";
 import NewsletterForm from "@/components/NewsletterForm";
 
 function TikTokIcon({ className }: { className?: string }) {
@@ -13,7 +14,8 @@ function TikTokIcon({ className }: { className?: string }) {
 
 export default function Footer() {
   const { data: settings } = useSiteSettings();
-  const siteName = settings?.site_name || "Coin des Apiculteurs";
+  const { t } = useTranslation();
+  const siteName = settings?.site_name || t("site_name");
   const slogan = settings?.slogan || "Ruches, miel et passion — faisons grandir nos colonies ensemble.";
   const contactEmail = settings?.contact_email || "";
   const showNewsletter = settings?.show_newsletter !== false;
@@ -41,17 +43,17 @@ export default function Footer() {
           <div>
             <h4 className="font-heading font-bold text-background mb-3">Navigation</h4>
             <div className="flex flex-col gap-2">
-              <Link to="/" className="text-sm text-background/60 hover:text-primary transition-colors">Accueil</Link>
-              <Link to="/communaute" className="text-sm text-background/60 hover:text-primary transition-colors">Communauté</Link>
-              <Link to="/glossaire" className="text-sm text-background/60 hover:text-primary transition-colors">Glossaire</Link>
-              <Link to="/calendrier" className="text-sm text-background/60 hover:text-primary transition-colors">Calendrier</Link>
-              <Link to="/a-propos" className="text-sm text-background/60 hover:text-primary transition-colors">À propos</Link>
-              <Link to="/contact" className="text-sm text-background/60 hover:text-primary transition-colors">Contact</Link>
+              <Link to="/" className="text-sm text-background/60 hover:text-primary transition-colors">{t("nav_home")}</Link>
+              <Link to="/communaute" className="text-sm text-background/60 hover:text-primary transition-colors">{t("nav_community")}</Link>
+              <Link to="/glossaire" className="text-sm text-background/60 hover:text-primary transition-colors">{t("nav_glossary")}</Link>
+              <Link to="/calendrier" className="text-sm text-background/60 hover:text-primary transition-colors">{t("nav_calendar")}</Link>
+              <Link to="/a-propos" className="text-sm text-background/60 hover:text-primary transition-colors">{t("about")}</Link>
+              <Link to="/contact" className="text-sm text-background/60 hover:text-primary transition-colors">{t("contact")}</Link>
             </div>
           </div>
 
           <div>
-            <h4 className="font-heading font-bold text-background mb-3">Suivez-nous</h4>
+            <h4 className="font-heading font-bold text-background mb-3">{t("follow_us")}</h4>
             {socialLinks.length > 0 && (
               <div className="flex gap-3 mb-4">
                 {socialLinks.map((s) => (
@@ -72,8 +74,8 @@ export default function Footer() {
           {showNewsletter && (
             <div>
               <NewsletterForm
-                title={settings?.newsletter_title || "Newsletter"}
-                subtitle={settings?.newsletter_subtitle || "Recevez nos articles par email."}
+                title={settings?.newsletter_title || t("newsletter_title")}
+                subtitle={settings?.newsletter_subtitle || t("newsletter_subtitle")}
                 variant="card"
               />
             </div>
@@ -83,9 +85,9 @@ export default function Footer() {
         <div className="mt-10 pt-6 border-t border-background/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-background/40">© {new Date().getFullYear()} {siteName} | All Rights Reserved</p>
           <div className="flex gap-4 text-xs text-background/40">
-            <Link to="/confidentialite" className="hover:text-primary transition-colors">Confidentialité</Link>
-            <Link to="/a-propos" className="hover:text-primary transition-colors">À propos</Link>
-            <Link to="/contact" className="hover:text-primary transition-colors">Contact</Link>
+            <Link to="/confidentialite" className="hover:text-primary transition-colors">{t("privacy")}</Link>
+            <Link to="/a-propos" className="hover:text-primary transition-colors">{t("about")}</Link>
+            <Link to="/contact" className="hover:text-primary transition-colors">{t("contact")}</Link>
           </div>
         </div>
       </div>

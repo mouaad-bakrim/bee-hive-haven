@@ -352,6 +352,7 @@ export type Database = {
           id: number
           instagram_enabled: boolean | null
           instagram_url: string | null
+          language: string | null
           logo_url: string | null
           maintenance_mode: boolean | null
           meta_description: string | null
@@ -407,6 +408,7 @@ export type Database = {
           id?: number
           instagram_enabled?: boolean | null
           instagram_url?: string | null
+          language?: string | null
           logo_url?: string | null
           maintenance_mode?: boolean | null
           meta_description?: string | null
@@ -462,6 +464,7 @@ export type Database = {
           id?: number
           instagram_enabled?: boolean | null
           instagram_url?: string | null
+          language?: string | null
           logo_url?: string | null
           maintenance_mode?: boolean | null
           meta_description?: string | null

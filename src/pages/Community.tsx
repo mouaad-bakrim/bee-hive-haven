@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTimeAgo } from "@/lib/formatTimeAgo";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Question {
   id: string;
@@ -27,6 +28,8 @@ interface Answer {
   created_at: string;
 }
 
+type SortMode = "recent" | "votes" | "unanswered";
+
 function slugify(text: string) {
   return text.toLowerCase().trim()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -45,7 +48,9 @@ export default function Community() {
   const [answerContent, setAnswerContent] = useState("");
   const [answerAuthor, setAnswerAuthor] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [sortMode, setSortMode] = useState<SortMode>("recent");
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const fetchAll = async () => {
     setLoading(true);
@@ -73,9 +78,24 @@ export default function Community() {
 
   useEffect(() => { fetchAll(); }, []);
 
+  const sorted = [...questions].sort((a, b) => {
+    if (sortMode === "votes") {
+      const aVotes = (a.answers ?? []).reduce((s, ans) => s + ans.votes_up, 0);
+      const bVotes = (b.answers ?? []).reduce((s, ans) => s + ans.votes_up, 0);
+      return bVotes - aVotes;
+    }
+    if (sortMode === "unanswered") {
+      return (a.answers?.length ?? 0) - (b.answers?.length ?? 0);
+    }
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
   const handleAskQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim() || !newContent.trim() || !newAuthor.trim()) return;
+    if (!newTitle.trim() || !newContent.trim() || !newAuthor.trim()) {
+      toast({ title: t("fill_all_fields"), variant: "destructive" });
+      return;
+    }
     setSubmitting(true);
     try {
       const { error } = await supabase.from("forum_questions").insert({
@@ -85,11 +105,11 @@ export default function Community() {
         slug: slugify(newTitle),
       });
       if (error) throw error;
-      toast({ title: "Question publiée ! 🐝" });
+      toast({ title: t("question_sent"), description: t("pending_moderation") });
       setNewTitle(""); setNewContent(""); setNewAuthor(""); setShowForm(false);
       fetchAll();
     } catch (err: any) {
-      toast({ title: "Erreur", description: err?.message, variant: "destructive" });
+      toast({ title: t("error"), description: err?.message, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -105,11 +125,11 @@ export default function Community() {
         author_name: answerAuthor.trim(),
       });
       if (error) throw error;
-      toast({ title: "Réponse publiée ! ✅" });
+      toast({ title: t("answer_sent") });
       setAnswerContent(""); setAnswerAuthor(""); setSelectedQ(null);
       fetchAll();
     } catch (err: any) {
-      toast({ title: "Erreur", description: err?.message, variant: "destructive" });
+      toast({ title: t("error"), description: err?.message, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -123,13 +143,13 @@ export default function Community() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="container mx-auto px-4 py-12">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="font-heading text-3xl font-bold text-foreground">🐝 Communauté</h1>
-            <p className="text-muted-foreground mt-1">Questions & Réponses entre apiculteurs</p>
+            <h1 className="font-heading text-3xl font-bold text-foreground">🐝 {t("community_title")}</h1>
+            <p className="text-muted-foreground mt-1">{t("community_subtitle")}</p>
           </div>
           <Button onClick={() => setShowForm(!showForm)} className="honey-gradient text-primary-foreground gap-1.5">
-            <Plus className="w-4 h-4" /> Poser une question
+            <Plus className="w-4 h-4" /> {t("ask_question")}
           </Button>
         </div>
 
@@ -139,30 +159,49 @@ export default function Community() {
             onSubmit={handleAskQuestion}
             className="bg-card rounded-xl border border-border p-6 mb-8 space-y-4"
           >
-            <Input value={newAuthor} onChange={(e) => setNewAuthor(e.target.value)} placeholder="Votre nom" maxLength={100} />
-            <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Titre de votre question" maxLength={200} />
-            <Textarea value={newContent} onChange={(e) => setNewContent(e.target.value)} placeholder="Décrivez votre question en détail…" rows={4} maxLength={2000} />
+            <Input value={newAuthor} onChange={(e) => setNewAuthor(e.target.value)} placeholder={t("your_name")} maxLength={100} />
+            <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder={t("question_title")} maxLength={200} />
+            <Textarea value={newContent} onChange={(e) => setNewContent(e.target.value)} placeholder={t("question_detail")} rows={4} maxLength={2000} />
             <div className="flex gap-2">
               <Button type="submit" disabled={submitting} className="honey-gradient text-primary-foreground gap-1.5">
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                Publier
+                {t("publish")}
               </Button>
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Annuler</Button>
+              <Button type="button" variant="outline" onClick={() => setShowForm(false)}>{t("cancel")}</Button>
             </div>
           </motion.form>
         )}
 
+        {/* Sort tabs */}
+        <div className="flex gap-2 mb-6">
+          {([
+            { key: "recent" as SortMode, label: t("sort_recent") },
+            { key: "votes" as SortMode, label: t("sort_votes") },
+            { key: "unanswered" as SortMode, label: t("sort_unanswered") },
+          ]).map((s) => (
+            <button
+              key={s.key}
+              onClick={() => setSortMode(s.key)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                sortMode === s.key ? "honey-gradient text-primary-foreground shadow-md" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-        ) : questions.length === 0 ? (
+        ) : sorted.length === 0 ? (
           <div className="bg-card rounded-xl border border-border p-12 text-center text-muted-foreground">
             <p className="text-4xl mb-3">🐝</p>
-            <p className="font-heading font-bold text-foreground mb-2">Aucune question pour le moment</p>
-            <p className="text-sm">Soyez le premier à poser une question !</p>
+            <p className="font-heading font-bold text-foreground mb-2">{t("no_questions")}</p>
+            <p className="text-sm">{t("be_first")}</p>
           </div>
         ) : (
           <div className="space-y-6">
-            {questions.map((q) => (
+            {sorted.map((q) => (
               <div key={q.id} className="bg-card rounded-xl border border-border overflow-hidden">
                 <div className="p-5">
                   <h2 className="font-heading font-bold text-lg text-foreground mb-1">{q.title}</h2>
@@ -198,18 +237,18 @@ export default function Community() {
                 <div className="p-4 border-t border-border">
                   {selectedQ === q.id ? (
                     <div className="space-y-3">
-                      <Input value={answerAuthor} onChange={(e) => setAnswerAuthor(e.target.value)} placeholder="Votre nom" maxLength={100} />
-                      <Textarea value={answerContent} onChange={(e) => setAnswerContent(e.target.value)} placeholder="Votre réponse…" rows={3} />
+                      <Input value={answerAuthor} onChange={(e) => setAnswerAuthor(e.target.value)} placeholder={t("your_name")} maxLength={100} />
+                      <Textarea value={answerContent} onChange={(e) => setAnswerContent(e.target.value)} placeholder={t("your_answer")} rows={3} />
                       <div className="flex gap-2">
                         <Button size="sm" onClick={() => handleAnswer(q.id)} disabled={submitting} className="honey-gradient text-primary-foreground gap-1">
-                          {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Répondre
+                          {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} {t("answer")}
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => setSelectedQ(null)}>Annuler</Button>
+                        <Button size="sm" variant="outline" onClick={() => setSelectedQ(null)}>{t("cancel")}</Button>
                       </div>
                     </div>
                   ) : (
                     <button onClick={() => setSelectedQ(q.id)} className="text-sm text-primary font-medium hover:underline flex items-center gap-1">
-                      <MessageCircle className="w-4 h-4" /> Répondre ({(q.answers ?? []).length})
+                      <MessageCircle className="w-4 h-4" /> {t("answer")} ({(q.answers ?? []).length})
                     </button>
                   )}
                 </div>

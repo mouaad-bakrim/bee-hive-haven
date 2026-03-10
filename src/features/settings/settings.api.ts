@@ -52,6 +52,7 @@ export interface SiteSettings {
   border_radius_preset: string | null;
   card_style: string | null;
   animation_speed: string | null;
+  language: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -153,9 +153,17 @@ export default function Categories() {
           className="max-w-xs"
         />
         <Button
-          onClick={handleAdd}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            handleAdd();
+          }}
           disabled={addMutation.isPending || !newName.trim()}
-          className="honey-gradient text-primary-foreground gap-1.5"
+          className={
+            !newName.trim()
+              ? "bg-muted text-muted-foreground cursor-not-allowed gap-1.5"
+              : "honey-gradient text-primary-foreground gap-1.5"
+          }
         >
           <Plus className="w-4 h-4" /> Ajouter
         </Button>

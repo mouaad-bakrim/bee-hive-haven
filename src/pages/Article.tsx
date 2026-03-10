@@ -79,7 +79,7 @@ export default function ArticlePage() {
     setSubmitting(true);
     try {
       await createComment({
-        article_id: article.id,
+        post_id: article.id,
         author_name: commentName.trim(),
         content: commentContent.trim(),
       });

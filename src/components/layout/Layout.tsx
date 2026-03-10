@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Header from "./Header";
 import Footer from "./Footer";
 import ChatbotWidget from "@/components/ChatbotWidget";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 function ScrollToTop() {
   const { pathname } = useLocation();

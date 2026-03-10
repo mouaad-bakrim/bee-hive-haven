@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Header from "./Header";
 import Footer from "./Footer";
 import ChatbotWidget from "@/components/ChatbotWidget";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -42,6 +43,14 @@ function BackToTop() {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const { data: settings } = useSiteSettings();
+
+  useEffect(() => {
+    if (settings?.site_name) {
+      document.title = settings.site_name;
+    }
+  }, [settings?.site_name]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <ScrollToTop />

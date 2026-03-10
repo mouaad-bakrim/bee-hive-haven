@@ -9,14 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-
-const CATEGORIES = [
-  { value: "actualite", label: "Actualité" },
-  { value: "sante", label: "Santé" },
-  { value: "cours", label: "Cours Gratuit" },
-  { value: "histoires", label: "Histoires" },
-  { value: "buzz", label: "Buzz" },
-];
+import { useCategories } from "@/hooks/useCategories";
 
 function slugify(text: string) {
   return text
@@ -61,6 +54,7 @@ export default function PostEditor() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { data: categoriesList } = useCategories();
   const [form, setForm] = useState<PostForm>(empty);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
@@ -322,8 +316,8 @@ export default function PostEditor() {
                 onChange={(e) => handleChange("category", e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground"
               >
-                {CATEGORIES.map((c) => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
+                {(categoriesList ?? []).map((c) => (
+                  <option key={c.slug} value={c.slug}>{c.name}</option>
                 ))}
               </select>
             </div>

@@ -1,30 +1,32 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { TrendingUp, Eye, Instagram, Facebook } from "lucide-react";
+import { TrendingUp, Eye, Instagram, Facebook, Youtube, Twitter } from "lucide-react";
 import HeroSection from "@/components/home/HeroSection";
 import ArticleCard from "@/components/home/ArticleCard";
-import { categoryLabels, categoryColors, type Category } from "@/data/articles";
 import type { Article } from "@/data/articles";
 import { useToast } from "@/hooks/use-toast";
 import { useRealtimePublishedArticles } from "@/hooks/useRealtimePublishedArticles";
+import { useCategories } from "@/hooks/useCategories";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
-const ITEMS_PER_PAGE = 7;
-const ALL_CATEGORIES: (Category | "all")[] = ["all", "actualite", "sante", "cours", "histoires", "buzz"];
-
-function getCategoryCounts(articles: Article[]): Record<Category, number> {
-  const counts: Record<Category, number> = { actualite: 0, sante: 0, cours: 0, histoires: 0, buzz: 0 };
-  articles.forEach((a) => {
-    if (counts[a.category] !== undefined) counts[a.category]++;
-  });
-  return counts;
+function TikTokIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V9.16a8.16 8.16 0 004.76 1.53v-3.5a4.82 4.82 0 01-1-.5z" />
+    </svg>
+  );
 }
 
+const ITEMS_PER_PAGE = 7;
+
 export default function Index() {
-  const [category, setCategory] = useState<Category | "all">("all");
+  const [category, setCategory] = useState<string>("all");
   const [page, setPage] = useState(1);
   const { toast } = useToast();
   const { articles, loading, error } = useRealtimePublishedArticles({ orderBy: "published_at" });
+  const { data: categories } = useCategories();
+  const { data: settings } = useSiteSettings();
 
   useEffect(() => {
     if (error) toast({ title: "Erreur", description: error, variant: "destructive" });
@@ -38,12 +40,26 @@ export default function Index() {
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
   const popular = useMemo(() => [...articles].sort((a, b) => b.views - a.views).slice(0, 5), [articles]);
-  const counts = useMemo(() => getCategoryCounts(articles), [articles]);
 
-  const handleCategoryChange = (cat: Category | "all") => {
+  // Count articles per category
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    articles.forEach((a) => { counts[a.category] = (counts[a.category] || 0) + 1; });
+    return counts;
+  }, [articles]);
+
+  const handleCategoryChange = (cat: string) => {
     setCategory(cat);
     setPage(1);
   };
+
+  const socialLinks = [
+    { url: settings?.instagram_url, icon: <Instagram className="w-4 h-4" />, label: "Instagram" },
+    { url: settings?.facebook_url, icon: <Facebook className="w-4 h-4" />, label: "Facebook" },
+    { url: settings?.youtube_url, icon: <Youtube className="w-4 h-4" />, label: "YouTube" },
+    { url: settings?.tiktok_url, icon: <TikTokIcon className="w-4 h-4" />, label: "TikTok" },
+    { url: settings?.twitter_url, icon: <Twitter className="w-4 h-4" />, label: "Twitter" },
+  ].filter((s) => s.url);
 
   return (
     <>
@@ -51,17 +67,27 @@ export default function Index() {
 
       <section id="articles" className="container mx-auto px-4 py-12">
         <div className="flex flex-wrap gap-2 mb-8">
-          {ALL_CATEGORIES.map((cat) => (
+          <button
+            onClick={() => handleCategoryChange("all")}
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+              category === "all"
+                ? "honey-gradient text-primary-foreground shadow-md"
+                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            }`}
+          >
+            Tous
+          </button>
+          {(categories ?? []).map((cat) => (
             <button
-              key={cat}
-              onClick={() => handleCategoryChange(cat)}
+              key={cat.slug}
+              onClick={() => handleCategoryChange(cat.slug)}
               className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                category === cat
+                category === cat.slug
                   ? "honey-gradient text-primary-foreground shadow-md"
                   : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
               }`}
             >
-              {cat === "all" ? "Tous" : categoryLabels[cat]}
+              {cat.name}
             </button>
           ))}
         </div>
@@ -145,25 +171,27 @@ export default function Index() {
               <div className="bg-card rounded-xl border border-border p-5">
                 <h3 className="font-heading font-bold text-foreground mb-4">📂 Catégories</h3>
                 <div className="space-y-2">
-                  {(Object.keys(counts) as Category[]).map((cat) => (
-                    <Link key={cat} to={`/categorie/${cat}`} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
-                      <span className="text-sm font-medium text-foreground">{categoryLabels[cat]}</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground font-semibold">{counts[cat]}</span>
+                  {(categories ?? []).map((cat) => (
+                    <Link key={cat.slug} to={`/categorie/${cat.slug}`} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                      <span className="text-sm font-medium text-foreground">{cat.name}</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground font-semibold">{categoryCounts[cat.slug] || 0}</span>
                     </Link>
                   ))}
                 </div>
               </div>
-              <div className="bg-card rounded-xl border border-border p-5 text-center">
-                <h3 className="font-heading font-bold text-foreground mb-3">📱 Suivez-nous</h3>
-                <div className="flex justify-center gap-3">
-                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-all">
-                    <Instagram className="w-4 h-4" />
-                  </a>
-                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-all">
-                    <Facebook className="w-4 h-4" />
-                  </a>
+              {socialLinks.length > 0 && (
+                <div className="bg-card rounded-xl border border-border p-5 text-center">
+                  <h3 className="font-heading font-bold text-foreground mb-3">📱 Suivez-nous</h3>
+                  <div className="flex justify-center gap-3">
+                    {socialLinks.map((s) => (
+                      <a key={s.label} href={s.url!} target="_blank" rel="noopener noreferrer" aria-label={s.label}
+                        className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-all">
+                        {s.icon}
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </aside>
         </div>

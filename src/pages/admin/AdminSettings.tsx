@@ -160,7 +160,8 @@ export default function AdminSettings() {
       border_radius_preset: data.border_radius_preset ?? "rounded",
       card_style: data.card_style ?? "shadow",
       animation_speed: data.animation_speed ?? "normal",
-    };
+      language: (data as any).language ?? "fr",
+    } as any;
     setF(vals);
     setOriginal(vals);
   }, [data]);

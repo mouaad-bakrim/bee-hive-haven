@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Save, Loader2, Globe, Palette, Share2, Home, FileText, Search as SearchIcon,
-  BarChart3, Shield, Instagram, Facebook, Youtube, Twitter, MessageCircle,
+  BarChart3, Shield, Instagram, Facebook, Youtube, Twitter, MessageCircle, Brush,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

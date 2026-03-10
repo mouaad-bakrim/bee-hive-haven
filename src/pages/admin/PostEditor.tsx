@@ -316,8 +316,8 @@ export default function PostEditor() {
                 onChange={(e) => handleChange("category", e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground"
               >
-                {CATEGORIES.map((c) => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
+                {(categoriesList ?? []).map((c) => (
+                  <option key={c.slug} value={c.slug}>{c.name}</option>
                 ))}
               </select>
             </div>

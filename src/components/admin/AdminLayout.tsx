@@ -72,6 +72,7 @@ export default function AdminLayout() {
       label: "Audience",
       items: [
         { label: "Analytics", path: "/admin/analytics", icon: BarChart2 },
+        { label: "Newsletter", path: "/admin/subscribers", icon: Mail },
         { label: "Utilisateurs", path: "/admin/users", icon: Users },
       ],
     },

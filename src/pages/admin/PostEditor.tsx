@@ -54,6 +54,7 @@ export default function PostEditor() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { data: categoriesList } = useCategories();
   const [form, setForm] = useState<PostForm>(empty);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);

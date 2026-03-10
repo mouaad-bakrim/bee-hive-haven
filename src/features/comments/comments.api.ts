@@ -2,10 +2,11 @@ import { supabase } from "@/lib/supabase";
 
 export interface CommentRow {
   id: string;
-  article_id: string;
+  post_id: string;
   author_name: string;
   author_email: string | null;
   content: string;
+  status: string;
   created_at: string;
 }
 

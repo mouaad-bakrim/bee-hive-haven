@@ -1,10 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { FileText, Eye, Star, Clock, TrendingUp, BarChart3, AlertTriangle, Lightbulb } from "lucide-react";
+import { FileText, Eye, Star, Clock, TrendingUp, Lightbulb, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getArticlesAdmin } from "@/features/articles/articles.api";
 import { useToast } from "@/hooks/use-toast";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
+import AdvancedAnalytics from "@/components/admin/AdvancedAnalytics";
 
 interface Post {
   id: string;
@@ -27,14 +27,6 @@ interface Stats {
   noViews: number;
   topArticle: Post | null;
 }
-
-const PIE_COLORS = [
-  "hsl(37, 91%, 55%)",
-  "hsl(122, 39%, 49%)",
-  "hsl(210, 70%, 50%)",
-  "hsl(25, 85%, 55%)",
-  "hsl(340, 75%, 55%)",
-];
 
 function AnimatedCounter({ value, duration = 1 }: { value: number; duration?: number }) {
   const [count, setCount] = useState(0);
@@ -62,18 +54,14 @@ export default function Dashboard() {
     let cancelled = false;
     setLoading(true);
     getArticlesAdmin()
-      .then((data) => {
-        if (!cancelled) setPosts(data as Post[]);
-      })
+      .then((data) => { if (!cancelled) setPosts(data as Post[]); })
       .catch((err) => {
         if (!cancelled) {
           toast({ title: "Erreur", description: err?.message || "Impossible de charger les articles.", variant: "destructive" });
           setPosts([]);
         }
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [toast]);
 
@@ -91,36 +79,6 @@ export default function Dashboard() {
     };
   }, [posts, loading]);
 
-  // Category breakdown for pie chart
-  const categoryData = useMemo(() => {
-    const map: Record<string, number> = {};
-    posts.forEach((p) => { map[p.category] = (map[p.category] || 0) + 1; });
-    return Object.entries(map).map(([name, value]) => ({ name, value }));
-  }, [posts]);
-
-  // Top 5 articles for bar chart
-  const topArticles = useMemo(() => {
-    return [...posts]
-      .sort((a, b) => (b.views || 0) - (a.views || 0))
-      .slice(0, 5)
-      .map((p) => ({ name: p.title.length > 20 ? p.title.slice(0, 20) + "…" : p.title, views: p.views || 0 }));
-  }, [posts]);
-
-  // Simulated last 7 days views (from post_views_daily or mock)
-  const lineData = useMemo(() => {
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      days.push({
-        date: d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric" }),
-        views: Math.floor(Math.random() * 100 + 20),
-      });
-    }
-    return days;
-  }, []);
-
-  // Insights
   const insights = useMemo(() => {
     if (!stats) return [];
     const list: string[] = [];
@@ -136,8 +94,8 @@ export default function Dashboard() {
         { label: "Articles", value: stats.total, icon: FileText, color: "text-primary" },
         { label: "Publiés", value: stats.published, icon: TrendingUp, color: "text-accent" },
         { label: "Brouillons", value: stats.drafts, icon: Clock, color: "text-muted-foreground" },
-        { label: "Vues totales", value: stats.totalViews, icon: Eye, color: "text-cat-buzz" },
-        { label: "À la une", value: stats.featured, icon: Star, color: "text-cat-histoires" },
+        { label: "Vues totales", value: stats.totalViews, icon: Eye, color: "text-primary" },
+        { label: "À la une", value: stats.featured, icon: Star, color: "text-primary" },
         { label: "Sans vues", value: stats.noViews, icon: AlertTriangle, color: "text-destructive" },
       ]
     : [];
@@ -146,7 +104,7 @@ export default function Dashboard() {
     <div>
       <h1 className="font-heading text-2xl font-bold text-foreground mb-6">Tableau de bord</h1>
 
-      {/* KPI Cards */}
+      {/* Article KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
@@ -158,7 +116,7 @@ export default function Dashboard() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-card border border-border rounded-xl p-4 hover:honey-shadow hover:-translate-y-0.5 transition-all duration-300 cursor-default"
+                className="bg-card border border-border rounded-xl p-4 hover:honey-shadow hover:-translate-y-0.5 transition-all duration-300"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <c.icon className={`w-4 h-4 ${c.color}`} />
@@ -171,103 +129,26 @@ export default function Dashboard() {
             ))}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Line Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="lg:col-span-2 bg-card border border-border rounded-xl p-5"
-        >
-          <h2 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-primary" /> Vues (7 derniers jours)
-          </h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={lineData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(37, 30%, 88%)" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(28, 25%, 45%)" />
-              <YAxis tick={{ fontSize: 11 }} stroke="hsl(28, 25%, 45%)" />
-              <RechartsTooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(37, 30%, 88%)" }} />
-              <Line type="monotone" dataKey="views" stroke="hsl(37, 91%, 55%)" strokeWidth={2.5} dot={{ fill: "hsl(37, 91%, 55%)", r: 4 }} activeDot={{ r: 6 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </motion.div>
-
-        {/* Pie Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-card border border-border rounded-xl p-5"
-        >
-          <h2 className="font-heading font-bold text-foreground mb-4">Articles par catégorie</h2>
-          {categoryData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  paddingAngle={3}
-                  dataKey="value"
-                  label={({ name, value }) => `${name} (${value})`}
-                >
-                  {categoryData.map((_, i) => (
-                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <RechartsTooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-12">Aucune donnée</p>
-          )}
-        </motion.div>
-      </div>
-
-      {/* Bar Chart - Top articles */}
-      {topArticles.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="bg-card border border-border rounded-xl p-5 mb-8"
-        >
-          <h2 className="font-heading font-bold text-foreground mb-4">🏆 Top articles</h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={topArticles} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(37, 30%, 88%)" />
-              <XAxis type="number" tick={{ fontSize: 11 }} stroke="hsl(28, 25%, 45%)" />
-              <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 11 }} stroke="hsl(28, 25%, 45%)" />
-              <RechartsTooltip />
-              <Bar dataKey="views" fill="hsl(37, 91%, 55%)" radius={[0, 6, 6, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </motion.div>
-      )}
-
       {/* Insights */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="bg-card border border-border rounded-xl p-5 mb-8"
-      >
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+        className="bg-card border border-border rounded-xl p-5 mb-8">
         <h2 className="font-heading font-bold text-foreground mb-3 flex items-center gap-2">
           <Lightbulb className="w-4 h-4 text-primary" /> Insights
         </h2>
         <ul className="space-y-2">
           {insights.map((ins, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-              <span className="text-primary mt-0.5">•</span>
-              {ins}
+              <span className="text-primary mt-0.5">•</span>{ins}
             </li>
           ))}
         </ul>
       </motion.div>
+
+      {/* Advanced Analytics */}
+      <div className="mb-8">
+        <h2 className="font-heading text-xl font-bold text-foreground mb-4">📊 Analytics</h2>
+        <AdvancedAnalytics />
+      </div>
 
       {/* Recent Posts Table */}
       <div className="bg-card border border-border rounded-xl">
@@ -295,7 +176,7 @@ export default function Dashboard() {
                       <td className="px-4 py-3">
                         <Link to={`/admin/posts/${post.id}/edit`} className="flex items-center gap-3 group">
                           {post.cover_url && (
-                            <img src={post.cover_url} alt="" className="w-10 h-7 rounded object-cover flex-shrink-0" />
+                            <img src={post.cover_url} alt="" className="w-10 h-7 rounded object-cover flex-shrink-0" loading="lazy" width={40} height={28} />
                           )}
                           <span className="font-medium text-foreground group-hover:text-primary transition-colors truncate max-w-[200px]">
                             {post.title}

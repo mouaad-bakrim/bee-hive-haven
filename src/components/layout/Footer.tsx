@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Instagram, Facebook, Youtube, Twitter } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import NewsletterForm from "@/components/NewsletterForm";
 
 function TikTokIcon({ className }: { className?: string }) {
   return (
@@ -15,6 +16,7 @@ export default function Footer() {
   const siteName = settings?.site_name || "Coin des Apiculteurs";
   const slogan = settings?.slogan || "Ruches, miel et passion — faisons grandir nos colonies ensemble.";
   const contactEmail = settings?.contact_email || "";
+  const showNewsletter = settings?.show_newsletter !== false;
 
   const socialLinks = [
     { url: settings?.instagram_url, enabled: settings?.instagram_enabled, icon: <Instagram className="w-4 h-4" />, label: "Instagram" },
@@ -27,7 +29,7 @@ export default function Footer() {
   return (
     <footer className="bg-foreground text-background/80 mt-16">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-3">
               <span className="text-2xl">🐝</span>
@@ -40,9 +42,11 @@ export default function Footer() {
             <h4 className="font-heading font-bold text-background mb-3">Navigation</h4>
             <div className="flex flex-col gap-2">
               <Link to="/" className="text-sm text-background/60 hover:text-primary transition-colors">Accueil</Link>
+              <Link to="/communaute" className="text-sm text-background/60 hover:text-primary transition-colors">Communauté</Link>
+              <Link to="/glossaire" className="text-sm text-background/60 hover:text-primary transition-colors">Glossaire</Link>
+              <Link to="/calendrier" className="text-sm text-background/60 hover:text-primary transition-colors">Calendrier</Link>
               <Link to="/a-propos" className="text-sm text-background/60 hover:text-primary transition-colors">À propos</Link>
-              <Link to="/contact" className="text-sm text-background/60 hover:text-primary transition-colors">Nous contacter</Link>
-              <Link to="/confidentialite" className="text-sm text-background/60 hover:text-primary transition-colors">Politique de confidentialité</Link>
+              <Link to="/contact" className="text-sm text-background/60 hover:text-primary transition-colors">Contact</Link>
             </div>
           </div>
 
@@ -64,6 +68,16 @@ export default function Footer() {
               </p>
             )}
           </div>
+
+          {showNewsletter && (
+            <div>
+              <NewsletterForm
+                title={settings?.newsletter_title || "Newsletter"}
+                subtitle={settings?.newsletter_subtitle || "Recevez nos articles par email."}
+                variant="card"
+              />
+            </div>
+          )}
         </div>
 
         <div className="mt-10 pt-6 border-t border-background/10 flex flex-col sm:flex-row items-center justify-between gap-4">

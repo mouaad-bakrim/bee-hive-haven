@@ -219,80 +219,152 @@ export type Database = {
       site_settings: {
         Row: {
           address: string | null
+          articles_per_page: number | null
+          comments_enabled: boolean | null
+          comments_moderation: boolean | null
           contact_email: string | null
           created_at: string
+          facebook_enabled: boolean | null
           facebook_url: string | null
           favicon_url: string | null
           google_analytics_id: string | null
+          hero_cta_text: string | null
           hero_image_url: string | null
+          hero_subtitle: string | null
+          hero_title: string | null
           id: number
+          instagram_enabled: boolean | null
           instagram_url: string | null
           logo_url: string | null
+          maintenance_mode: boolean | null
           meta_description: string | null
           meta_keywords: string | null
           newsletter_enabled: boolean | null
           newsletter_subtitle: string | null
           newsletter_title: string | null
           primary_color: string | null
+          public_registration: boolean | null
+          show_author: boolean | null
+          show_bee_animations: boolean | null
+          show_buzz_section: boolean | null
+          show_categories_filter: boolean | null
+          show_chatbot: boolean | null
+          show_date: boolean | null
+          show_hero: boolean | null
+          show_newsletter: boolean | null
+          show_related_articles: boolean | null
+          show_share_buttons: boolean | null
           site_name: string | null
           slogan: string | null
+          tiktok_enabled: boolean | null
           tiktok_url: string | null
+          twitter_enabled: boolean | null
           twitter_url: string | null
           umami_website_id: string | null
           updated_at: string
+          whatsapp_enabled: boolean | null
           whatsapp_number: string | null
+          youtube_enabled: boolean | null
           youtube_url: string | null
         }
         Insert: {
           address?: string | null
+          articles_per_page?: number | null
+          comments_enabled?: boolean | null
+          comments_moderation?: boolean | null
           contact_email?: string | null
           created_at?: string
+          facebook_enabled?: boolean | null
           facebook_url?: string | null
           favicon_url?: string | null
           google_analytics_id?: string | null
+          hero_cta_text?: string | null
           hero_image_url?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
           id?: number
+          instagram_enabled?: boolean | null
           instagram_url?: string | null
           logo_url?: string | null
+          maintenance_mode?: boolean | null
           meta_description?: string | null
           meta_keywords?: string | null
           newsletter_enabled?: boolean | null
           newsletter_subtitle?: string | null
           newsletter_title?: string | null
           primary_color?: string | null
+          public_registration?: boolean | null
+          show_author?: boolean | null
+          show_bee_animations?: boolean | null
+          show_buzz_section?: boolean | null
+          show_categories_filter?: boolean | null
+          show_chatbot?: boolean | null
+          show_date?: boolean | null
+          show_hero?: boolean | null
+          show_newsletter?: boolean | null
+          show_related_articles?: boolean | null
+          show_share_buttons?: boolean | null
           site_name?: string | null
           slogan?: string | null
+          tiktok_enabled?: boolean | null
           tiktok_url?: string | null
+          twitter_enabled?: boolean | null
           twitter_url?: string | null
           umami_website_id?: string | null
           updated_at?: string
+          whatsapp_enabled?: boolean | null
           whatsapp_number?: string | null
+          youtube_enabled?: boolean | null
           youtube_url?: string | null
         }
         Update: {
           address?: string | null
+          articles_per_page?: number | null
+          comments_enabled?: boolean | null
+          comments_moderation?: boolean | null
           contact_email?: string | null
           created_at?: string
+          facebook_enabled?: boolean | null
           facebook_url?: string | null
           favicon_url?: string | null
           google_analytics_id?: string | null
+          hero_cta_text?: string | null
           hero_image_url?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
           id?: number
+          instagram_enabled?: boolean | null
           instagram_url?: string | null
           logo_url?: string | null
+          maintenance_mode?: boolean | null
           meta_description?: string | null
           meta_keywords?: string | null
           newsletter_enabled?: boolean | null
           newsletter_subtitle?: string | null
           newsletter_title?: string | null
           primary_color?: string | null
+          public_registration?: boolean | null
+          show_author?: boolean | null
+          show_bee_animations?: boolean | null
+          show_buzz_section?: boolean | null
+          show_categories_filter?: boolean | null
+          show_chatbot?: boolean | null
+          show_date?: boolean | null
+          show_hero?: boolean | null
+          show_newsletter?: boolean | null
+          show_related_articles?: boolean | null
+          show_share_buttons?: boolean | null
           site_name?: string | null
           slogan?: string | null
+          tiktok_enabled?: boolean | null
           tiktok_url?: string | null
+          twitter_enabled?: boolean | null
           twitter_url?: string | null
           umami_website_id?: string | null
           updated_at?: string
+          whatsapp_enabled?: boolean | null
           whatsapp_number?: string | null
+          youtube_enabled?: boolean | null
           youtube_url?: string | null
         }
         Relationships: []

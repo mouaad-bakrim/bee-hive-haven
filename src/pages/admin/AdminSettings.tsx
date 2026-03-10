@@ -84,6 +84,7 @@ function ToggleRow({ label, description, checked, onChange }: { label: string; d
 const SECTIONS = [
   { id: "general", label: "Général", icon: <Globe className="w-4 h-4" /> },
   { id: "appearance", label: "Apparence", icon: <Palette className="w-4 h-4" /> },
+  { id: "theme", label: "Thème visuel", icon: <Brush className="w-4 h-4" /> },
   { id: "social", label: "Réseaux sociaux", icon: <Share2 className="w-4 h-4" /> },
   { id: "homepage", label: "Page d'accueil", icon: <Home className="w-4 h-4" /> },
   { id: "articles", label: "Articles", icon: <FileText className="w-4 h-4" /> },

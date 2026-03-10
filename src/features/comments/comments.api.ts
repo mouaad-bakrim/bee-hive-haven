@@ -55,7 +55,7 @@ export async function createComment(input: CreateCommentInput): Promise<CommentR
   const { data, error } = await (supabase as any)
     .from("comments")
     .insert({
-      article_id: input.article_id,
+      post_id: input.post_id,
       author_name: input.author_name.trim(),
       author_email: input.author_email?.trim() || null,
       content: input.content.trim(),

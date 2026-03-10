@@ -23,6 +23,11 @@ const PostsList = lazy(() => import("./pages/admin/PostsList"));
 const PostEditor = lazy(() => import("./pages/admin/PostEditor"));
 const MediaLibrary = lazy(() => import("./pages/admin/MediaLibrary"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const Analytics = lazy(() => import("./pages/admin/Analytics"));
+const Comments = lazy(() => import("./pages/admin/Comments"));
+const Categories = lazy(() => import("./pages/admin/Categories"));
+const UsersPage = lazy(() => import("./pages/admin/Users"));
+const Notifications = lazy(() => import("./pages/admin/Notifications"));
 
 const queryClient = new QueryClient();
 
@@ -61,6 +66,11 @@ const App = () => (
                 <Route path="posts/:id/edit" element={<PostEditor />} />
                 <Route path="media" element={<MediaLibrary />} />
                 <Route path="settings" element={<AdminSettings />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="comments" element={<Comments />} />
+                <Route path="categories" element={<Categories />} />
+                <Route path="users" element={<UsersPage />} />
+                <Route path="notifications" element={<Notifications />} />
               </Route>
 
               <Route path="*" element={<Layout><NotFound /></Layout>} />

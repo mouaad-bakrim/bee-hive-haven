@@ -1,121 +1,103 @@
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Period = "today" | "7d" | "30d" | "90d";
 
-function seedRandom(seed: number) {
-  return () => {
-    seed = (seed * 16807) % 2147483647;
-    return (seed - 1) / 2147483646;
-  };
-}
-
-function generateDailyData(days: number) {
-  const data = [];
-  const rand = seedRandom(42);
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-    const base = isWeekend ? 60 : 120;
-    const visitors = Math.floor(base + rand() * 80);
-    data.push({
-      date: d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }),
-      visitors,
-      pageViews: Math.floor(visitors * (2 + rand() * 0.6)),
-    });
-  }
-  return data;
-}
-
 export interface AnalyticsData {
-  uniqueVisitors: number;
-  uniqueVisitorsYesterday: number;
-  pageViews: number;
-  pageViewsYesterday: number;
-  articlesViewed: number;
-  bounceRate: number;
-  avgSessionDuration: string;
-  realtimeVisitors: number;
-  dailyData: { date: string; visitors: number; pageViews: number }[];
+  // Real data from DB
+  totalArticles: number;
+  publishedArticles: number;
+  drafts: number;
+  totalViews: number;
+  featuredCount: number;
+  noViewsCount: number;
+  totalComments: number;
+  pendingComments: number;
   topArticles: { name: string; views: number }[];
-  trafficSources: { name: string; value: number }[];
-  devices: { name: string; value: number; icon: string }[];
-  browsers: { name: string; value: number }[];
-  countries: { name: string; value: number; flag: string }[];
-  topPages: { url: string; views: number; avgTime: string }[];
+  categoryData: { name: string; value: number }[];
+  dailyViews: { date: string; views: number }[];
+  // Visitor stats not available
+  visitorStatsAvailable: false;
 }
 
-export function useAnalytics(period: Period): { data: AnalyticsData; loading: boolean } {
+function getDays(period: Period) {
+  return period === "today" ? 1 : period === "7d" ? 7 : period === "30d" ? 30 : 90;
+}
+
+export function useAnalytics(period: Period): { data: AnalyticsData | null; loading: boolean } {
+  const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    const t = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(t);
-  }, [period]);
 
-  const data = useMemo<AnalyticsData>(() => {
-    const days = period === "today" ? 1 : period === "7d" ? 7 : period === "30d" ? 30 : 90;
-    const multiplier = days === 1 ? 1 : days <= 7 ? 1 : days <= 30 ? 1 : 1;
-    const dailyData = generateDailyData(days);
+    const fetch = async () => {
+      try {
+        const days = getDays(period);
+        const since = new Date(Date.now() - days * 86400000).toISOString().split("T")[0];
 
-    const totalVisitors = dailyData.reduce((s, d) => s + d.visitors, 0);
-    const totalPageViews = dailyData.reduce((s, d) => s + d.pageViews, 0);
-    const yesterdayData = generateDailyData(2);
+        const [postsRes, commentsCountRes, pendingRes, viewsRes] = await Promise.all([
+          supabase.from("posts").select("*"),
+          (supabase as any).from("comments").select("id", { count: "exact", head: true }),
+          (supabase as any).from("comments").select("id", { count: "exact", head: true }).eq("status", "pending"),
+          supabase.from("post_views_daily").select("view_date, count").gte("view_date", since).order("view_date", { ascending: true }),
+        ]);
 
-    const rand = seedRandom(123);
-    const realtimeVisitors = Math.floor(2 + rand() * 10);
+        if (cancelled) return;
 
-    return {
-      uniqueVisitors: totalVisitors,
-      uniqueVisitorsYesterday: yesterdayData[0]?.visitors || 0,
-      pageViews: totalPageViews,
-      pageViewsYesterday: yesterdayData[0]?.pageViews || 0,
-      articlesViewed: Math.floor(totalPageViews * 0.65),
-      bounceRate: Math.floor(35 + rand() * 15),
-      avgSessionDuration: `${Math.floor(2 + rand() * 4)}:${String(Math.floor(rand() * 59)).padStart(2, "0")}`,
-      realtimeVisitors,
-      dailyData,
-      topArticles: [
-        { name: "Comment débuter en apiculture", views: 1240 },
-        { name: "Les bienfaits du miel", views: 980 },
-        { name: "Protéger ses abeilles du varroa", views: 756 },
-        { name: "Installer une ruche au jardin", views: 632 },
-        { name: "Récolter son premier miel", views: 445 },
-      ],
-      trafficSources: [
-        { name: "Direct", value: 40 },
-        { name: "Google", value: 35 },
-        { name: "Facebook", value: 15 },
-        { name: "Autres", value: 10 },
-      ],
-      devices: [
-        { name: "Mobile", value: 58, icon: "📱" },
-        { name: "Desktop", value: 35, icon: "💻" },
-        { name: "Tablet", value: 7, icon: "📟" },
-      ],
-      browsers: [
-        { name: "Chrome", value: 64 },
-        { name: "Safari", value: 18 },
-        { name: "Firefox", value: 12 },
-        { name: "Edge", value: 6 },
-      ],
-      countries: [
-        { name: "France", value: 65, flag: "🇫🇷" },
-        { name: "Belgique", value: 12, flag: "🇧🇪" },
-        { name: "Maroc", value: 8, flag: "🇲🇦" },
-        { name: "Suisse", value: 7, flag: "🇨🇭" },
-        { name: "Canada", value: 5, flag: "🇨🇦" },
-        { name: "Autres", value: 3, flag: "🌍" },
-      ],
-      topPages: [
-        { url: "/article/debuter-apiculture", views: 1240, avgTime: "4:32" },
-        { url: "/article/bienfaits-miel", views: 980, avgTime: "3:15" },
-        { url: "/", views: 870, avgTime: "1:45" },
-        { url: "/article/varroa-protection", views: 756, avgTime: "5:10" },
-        { url: "/categorie/sante", views: 445, avgTime: "2:30" },
-      ],
+        const posts = postsRes.data ?? [];
+        const totalComments = commentsCountRes.count ?? 0;
+        const pendingComments = pendingRes.count ?? 0;
+
+        // Aggregate daily views
+        const byDate: Record<string, number> = {};
+        (viewsRes.data ?? []).forEach((r: any) => {
+          byDate[r.view_date] = (byDate[r.view_date] || 0) + (r.count || 0);
+        });
+        const dailyViews = [];
+        for (let i = days - 1; i >= 0; i--) {
+          const d = new Date(Date.now() - i * 86400000);
+          const key = d.toISOString().split("T")[0];
+          dailyViews.push({
+            date: d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }),
+            views: byDate[key] || 0,
+          });
+        }
+
+        // Category counts
+        const catCounts: Record<string, number> = {};
+        posts.forEach((p) => { catCounts[p.category] = (catCounts[p.category] || 0) + 1; });
+
+        // Top articles
+        const topArticles = [...posts]
+          .sort((a, b) => (b.views || 0) - (a.views || 0))
+          .slice(0, 10)
+          .map((p) => ({ name: p.title.length > 35 ? p.title.slice(0, 35) + "…" : p.title, views: p.views || 0 }));
+
+        setData({
+          totalArticles: posts.length,
+          publishedArticles: posts.filter((p) => p.status === "published").length,
+          drafts: posts.filter((p) => p.status === "draft").length,
+          totalViews: posts.reduce((s, p) => s + (p.views || 0), 0),
+          featuredCount: posts.filter((p) => p.featured).length,
+          noViewsCount: posts.filter((p) => !p.views || p.views === 0).length,
+          totalComments,
+          pendingComments,
+          topArticles,
+          categoryData: Object.entries(catCounts).map(([name, value]) => ({ name, value })),
+          dailyViews,
+          visitorStatsAvailable: false,
+        });
+      } catch (err) {
+        console.error("Analytics fetch error:", err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     };
+
+    fetch();
+    return () => { cancelled = true; };
   }, [period]);
 
   return { data, loading };

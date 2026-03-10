@@ -9,15 +9,12 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
-  useEffect(() => {
-    window.scrollTo({ top: 0 });
-  }, [pathname]);
+  useEffect(() => { window.scrollTo({ top: 0 }); }, [pathname]);
   return null;
 }
 
 function BackToTop() {
   const [visible, setVisible] = useState(false);
-
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 400);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -44,6 +41,7 @@ function BackToTop() {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { data: settings } = useSiteSettings();
+  const showChatbot = settings?.show_chatbot !== false;
 
   useEffect(() => {
     if (settings?.site_name) {
@@ -58,7 +56,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <main id="main-content" className="flex-1 pt-16">{children}</main>
       <Footer />
       <BackToTop />
-      <ChatbotWidget />
+      {showChatbot && <ChatbotWidget />}
     </div>
   );
 }

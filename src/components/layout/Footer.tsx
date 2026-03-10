@@ -17,18 +17,17 @@ export default function Footer() {
   const contactEmail = settings?.contact_email || "";
 
   const socialLinks = [
-    { url: settings?.instagram_url, icon: <Instagram className="w-4 h-4" />, label: "Instagram" },
-    { url: settings?.facebook_url, icon: <Facebook className="w-4 h-4" />, label: "Facebook" },
-    { url: settings?.youtube_url, icon: <Youtube className="w-4 h-4" />, label: "YouTube" },
-    { url: settings?.tiktok_url, icon: <TikTokIcon className="w-4 h-4" />, label: "TikTok" },
-    { url: settings?.twitter_url, icon: <Twitter className="w-4 h-4" />, label: "Twitter" },
-  ].filter((s) => s.url);
+    { url: settings?.instagram_url, enabled: settings?.instagram_enabled, icon: <Instagram className="w-4 h-4" />, label: "Instagram" },
+    { url: settings?.facebook_url, enabled: settings?.facebook_enabled, icon: <Facebook className="w-4 h-4" />, label: "Facebook" },
+    { url: settings?.youtube_url, enabled: settings?.youtube_enabled, icon: <Youtube className="w-4 h-4" />, label: "YouTube" },
+    { url: settings?.tiktok_url, enabled: settings?.tiktok_enabled, icon: <TikTokIcon className="w-4 h-4" />, label: "TikTok" },
+    { url: settings?.twitter_url, enabled: settings?.twitter_enabled, icon: <Twitter className="w-4 h-4" />, label: "Twitter" },
+  ].filter((s) => s.enabled !== false && s.url);
 
   return (
     <footer className="bg-foreground text-background/80 mt-16">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <span className="text-2xl">🐝</span>
@@ -37,7 +36,6 @@ export default function Footer() {
             <p className="text-sm text-background/60 leading-relaxed">{slogan}</p>
           </div>
 
-          {/* Links */}
           <div>
             <h4 className="font-heading font-bold text-background mb-3">Navigation</h4>
             <div className="flex flex-col gap-2">
@@ -48,20 +46,13 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Social */}
           <div>
             <h4 className="font-heading font-bold text-background mb-3">Suivez-nous</h4>
             {socialLinks.length > 0 && (
               <div className="flex gap-3 mb-4">
                 {socialLinks.map((s) => (
-                  <a
-                    key={s.label}
-                    href={s.url!}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={s.label}
-                    className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all"
-                  >
+                  <a key={s.label} href={s.url!} target="_blank" rel="noopener noreferrer" aria-label={s.label}
+                    className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all">
                     {s.icon}
                   </a>
                 ))}
@@ -72,18 +63,11 @@ export default function Footer() {
                 📧 <a href={`mailto:${contactEmail}`} className="hover:text-primary transition-colors">{contactEmail}</a>
               </p>
             )}
-            {settings?.newsletter_enabled !== false && (
-              <p className="text-xs text-background/40 mt-2">
-                {settings?.newsletter_title || "Inscrivez-vous à la newsletter pour ne rien rater !"}
-              </p>
-            )}
           </div>
         </div>
 
         <div className="mt-10 pt-6 border-t border-background/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-background/40">
-            © {new Date().getFullYear()} {siteName} | All Rights Reserved
-          </p>
+          <p className="text-xs text-background/40">© {new Date().getFullYear()} {siteName} | All Rights Reserved</p>
           <div className="flex gap-4 text-xs text-background/40">
             <Link to="/confidentialite" className="hover:text-primary transition-colors">Confidentialité</Link>
             <Link to="/a-propos" className="hover:text-primary transition-colors">À propos</Link>

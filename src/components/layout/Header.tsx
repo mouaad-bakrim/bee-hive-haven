@@ -30,12 +30,12 @@ export default function Header() {
   ];
 
   const socialLinks = [
-    { url: settings?.instagram_url, icon: <Instagram className="w-4 h-4" />, label: "Instagram" },
-    { url: settings?.facebook_url, icon: <Facebook className="w-4 h-4" />, label: "Facebook" },
-    { url: settings?.youtube_url, icon: <Youtube className="w-4 h-4" />, label: "YouTube" },
-    { url: settings?.tiktok_url, icon: <TikTokIcon className="w-4 h-4" />, label: "TikTok" },
-    { url: settings?.twitter_url, icon: <Twitter className="w-4 h-4" />, label: "Twitter" },
-  ].filter((s) => s.url);
+    { url: settings?.instagram_url, enabled: settings?.instagram_enabled, icon: <Instagram className="w-4 h-4" />, label: "Instagram" },
+    { url: settings?.facebook_url, enabled: settings?.facebook_enabled, icon: <Facebook className="w-4 h-4" />, label: "Facebook" },
+    { url: settings?.youtube_url, enabled: settings?.youtube_enabled, icon: <Youtube className="w-4 h-4" />, label: "YouTube" },
+    { url: settings?.tiktok_url, enabled: settings?.tiktok_enabled, icon: <TikTokIcon className="w-4 h-4" />, label: "TikTok" },
+    { url: settings?.twitter_url, enabled: settings?.twitter_enabled, icon: <Twitter className="w-4 h-4" />, label: "Twitter" },
+  ].filter((s) => s.enabled !== false && s.url);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

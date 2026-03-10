@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { TrendingUp, Eye, Instagram, Facebook, Youtube, Twitter } from "lucide-react";
+import { TrendingUp, Eye, Instagram, Facebook, Youtube, Twitter, Tag } from "lucide-react";
 import HeroSection from "@/components/home/HeroSection";
 import ArticleCard from "@/components/home/ArticleCard";
+import NewsletterForm from "@/components/NewsletterForm";
 import type { Article } from "@/data/articles";
 import { useToast } from "@/hooks/use-toast";
 import { useRealtimePublishedArticles } from "@/hooks/useRealtimePublishedArticles";

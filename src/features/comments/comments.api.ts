@@ -2,10 +2,11 @@ import { supabase } from "@/lib/supabase";
 
 export interface CommentRow {
   id: string;
-  article_id: string;
+  post_id: string;
   author_name: string;
   author_email: string | null;
   content: string;
+  status: string;
   created_at: string;
 }
 
@@ -30,18 +31,18 @@ export function validateCommentInput(
 /**
  * Fetch comments for an article (post), newest first.
  */
-export async function getComments(articleId: string): Promise<CommentRow[]> {
+export async function getComments(postId: string): Promise<CommentRow[]> {
   const { data, error } = await (supabase as any)
     .from("comments")
     .select("*")
-    .eq("article_id", articleId)
+    .eq("post_id", postId)
     .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as CommentRow[];
 }
 
 export interface CreateCommentInput {
-  article_id: string;
+  post_id: string;
   author_name: string;
   author_email?: string | null;
   content: string;
@@ -54,7 +55,7 @@ export async function createComment(input: CreateCommentInput): Promise<CommentR
   const { data, error } = await (supabase as any)
     .from("comments")
     .insert({
-      article_id: input.article_id,
+      post_id: input.post_id,
       author_name: input.author_name.trim(),
       author_email: input.author_email?.trim() || null,
       content: input.content.trim(),

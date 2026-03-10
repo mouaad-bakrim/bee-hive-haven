@@ -42,7 +42,7 @@ export async function getComments(postId: string): Promise<CommentRow[]> {
 }
 
 export interface CreateCommentInput {
-  article_id: string;
+  post_id: string;
   author_name: string;
   author_email?: string | null;
   content: string;

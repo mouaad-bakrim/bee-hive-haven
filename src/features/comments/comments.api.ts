@@ -51,7 +51,7 @@ export interface CreateCommentInput {
  * Insert a comment. RLS allows public INSERT.
  */
 export async function createComment(input: CreateCommentInput): Promise<CommentRow> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("comments")
     .insert({
       article_id: input.article_id,

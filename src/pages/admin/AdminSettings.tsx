@@ -291,6 +291,82 @@ export default function AdminSettings() {
           </SectionCard>
         )}
 
+        {/* ── Theme ── */}
+        {matchSection("thème visuel couleur palette police font radius arrondi carte ombre animation") && (
+          <SectionCard
+            id="theme"
+            icon={<Brush className="w-5 h-5" />}
+            title="Thème visuel"
+            description="Personnalisez l'apparence globale du site"
+            saving={savingSection === "theme"}
+            dirty={isDirty(["theme_preset", "font_family", "border_radius_preset", "card_style", "animation_speed"])}
+            onSave={() => handleSave("theme", ["theme_preset", "font_family", "border_radius_preset", "card_style", "animation_speed"])}
+          >
+            <Field label="Palette de couleurs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { id: "amber", label: "Amber / Miel", colors: "from-amber-400 to-amber-600" },
+                  { id: "green", label: "Vert nature", colors: "from-green-400 to-green-600" },
+                  { id: "blue", label: "Bleu ruche", colors: "from-blue-400 to-blue-600" },
+                  { id: "dark", label: "Sombre", colors: "from-gray-600 to-gray-800" },
+                ].map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => set("theme_preset", p.id)}
+                    className={`p-3 rounded-lg border-2 text-center transition-all ${
+                      f.theme_preset === p.id ? "border-primary ring-2 ring-primary/20" : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    <div className={`w-full h-6 rounded bg-gradient-to-r ${p.colors} mb-2`} />
+                    <span className="text-xs font-medium text-foreground">{p.label}</span>
+                  </button>
+                ))}
+              </div>
+            </Field>
+            <Field label="Police de caractères">
+              <Select value={f.font_family ?? "sans"} onValueChange={(v) => set("font_family", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sans">Sans-serif moderne</SelectItem>
+                  <SelectItem value="serif">Serif élégant</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Bords arrondis">
+              <Select value={f.border_radius_preset ?? "rounded"} onValueChange={(v) => set("border_radius_preset", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Carré</SelectItem>
+                  <SelectItem value="rounded">Arrondi</SelectItem>
+                  <SelectItem value="full">Très arrondi</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Style des cartes">
+              <Select value={f.card_style ?? "shadow"} onValueChange={(v) => set("card_style", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="shadow">Avec ombre</SelectItem>
+                  <SelectItem value="border">Bordure</SelectItem>
+                  <SelectItem value="flat">Flat</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Vitesse des animations">
+              <Select value={f.animation_speed ?? "normal"} onValueChange={(v) => set("animation_speed", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fast">Rapide</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="slow">Lent</SelectItem>
+                  <SelectItem value="none">Aucune</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+          </SectionCard>
+        )}
+
         {/* ── Social ── */}
         {matchSection("réseaux sociaux instagram facebook youtube twitter tiktok whatsapp") && (
           <SectionCard

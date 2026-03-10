@@ -154,6 +154,11 @@ export default function AdminSettings() {
       articles_per_page: data.articles_per_page ?? 10,
       maintenance_mode: data.maintenance_mode ?? false,
       public_registration: data.public_registration ?? false,
+      theme_preset: data.theme_preset ?? "amber",
+      font_family: data.font_family ?? "sans",
+      border_radius_preset: data.border_radius_preset ?? "rounded",
+      card_style: data.card_style ?? "shadow",
+      animation_speed: data.animation_speed ?? "normal",
     };
     setF(vals);
     setOriginal(vals);

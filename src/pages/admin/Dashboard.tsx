@@ -2,9 +2,13 @@ import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { FileText, Eye, Star, Clock, TrendingUp, Lightbulb, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { getArticlesAdmin } from "@/features/articles/articles.api";
 import { useToast } from "@/hooks/use-toast";
-import AdvancedAnalytics from "@/components/admin/AdvancedAnalytics";
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
+  ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar,
+} from "recharts";
 
 interface Post {
   id: string;
@@ -28,6 +32,8 @@ interface Stats {
   topArticle: Post | null;
 }
 
+const PIE_COLORS = ["hsl(37, 91%, 55%)", "hsl(122, 39%, 49%)", "hsl(210, 70%, 50%)", "hsl(25, 85%, 55%)", "hsl(340, 60%, 50%)", "hsl(180, 50%, 45%)"];
+
 function AnimatedCounter({ value, duration = 1 }: { value: number; duration?: number }) {
   const [count, setCount] = useState(0);
   useEffect(() => {
@@ -48,20 +54,48 @@ function AnimatedCounter({ value, duration = 1 }: { value: number; duration?: nu
 export default function Dashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewsData, setViewsData] = useState<{ date: string; views: number }[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getArticlesAdmin()
-      .then((data) => { if (!cancelled) setPosts(data as Post[]); })
-      .catch((err) => {
+
+    const fetchAll = async () => {
+      try {
+        const [articlesRes, viewsRes] = await Promise.all([
+          getArticlesAdmin(),
+          supabase
+            .from("post_views_daily")
+            .select("view_date, count")
+            .gte("view_date", new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0])
+            .order("view_date", { ascending: true }),
+        ]);
         if (!cancelled) {
-          toast({ title: "Erreur", description: err?.message || "Impossible de charger les articles.", variant: "destructive" });
-          setPosts([]);
+          setPosts(articlesRes as Post[]);
+          // Aggregate views by date
+          const byDate: Record<string, number> = {};
+          (viewsRes.data ?? []).forEach((r) => {
+            byDate[r.view_date] = (byDate[r.view_date] || 0) + (r.count || 0);
+          });
+          const last7 = [];
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date(Date.now() - i * 86400000);
+            const key = d.toISOString().split("T")[0];
+            last7.push({
+              date: d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }),
+              views: byDate[key] || 0,
+            });
+          }
+          setViewsData(last7);
         }
-      })
-      .finally(() => { if (!cancelled) setLoading(false); });
+      } catch (err: any) {
+        if (!cancelled) toast({ title: "Erreur", description: err?.message, variant: "destructive" });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    fetchAll();
     return () => { cancelled = true; };
   }, [toast]);
 
@@ -89,6 +123,19 @@ export default function Dashboard() {
     return list;
   }, [stats]);
 
+  // Top 5 articles by views
+  const topArticles = useMemo(() =>
+    [...posts].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5).map((p) => ({ name: p.title.length > 30 ? p.title.slice(0, 30) + "…" : p.title, views: p.views || 0 })),
+    [posts]
+  );
+
+  // Articles by category
+  const categoryData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    posts.forEach((p) => { counts[p.category] = (counts[p.category] || 0) + 1; });
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  }, [posts]);
+
   const cards = stats
     ? [
         { label: "Articles", value: stats.total, icon: FileText, color: "text-primary" },
@@ -104,27 +151,18 @@ export default function Dashboard() {
     <div>
       <h1 className="font-heading text-2xl font-bold text-foreground mb-6">Tableau de bord</h1>
 
-      {/* Article KPI Cards */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {loading
-          ? Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-24 rounded-xl bg-muted animate-pulse" />
-            ))
+          ? Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-24 rounded-xl bg-muted animate-pulse" />)
           : cards.map((c, i) => (
-              <motion.div
-                key={c.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="bg-card border border-border rounded-xl p-4 hover:honey-shadow hover:-translate-y-0.5 transition-all duration-300"
-              >
+              <motion.div key={c.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                className="bg-card border border-border rounded-xl p-4 hover:honey-shadow hover:-translate-y-0.5 transition-all duration-300">
                 <div className="flex items-center gap-2 mb-2">
                   <c.icon className={`w-4 h-4 ${c.color}`} />
                   <span className="text-xs text-muted-foreground font-medium">{c.label}</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">
-                  <AnimatedCounter value={typeof c.value === "number" ? c.value : 0} />
-                </p>
+                <p className="text-2xl font-bold text-foreground"><AnimatedCounter value={typeof c.value === "number" ? c.value : 0} /></p>
               </motion.div>
             ))}
       </div>
@@ -144,11 +182,59 @@ export default function Dashboard() {
         </ul>
       </motion.div>
 
-      {/* Advanced Analytics */}
-      <div className="mb-8">
-        <h2 className="font-heading text-xl font-bold text-foreground mb-4">📊 Analytics</h2>
-        <AdvancedAnalytics />
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Line Chart - Real views 7 days */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+          className="lg:col-span-2 bg-card border border-border rounded-xl p-5">
+          <h3 className="font-heading font-bold text-foreground mb-4">📈 Vues des 7 derniers jours</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={viewsData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(37, 30%, 88%)" />
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(28, 25%, 45%)" />
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(28, 25%, 45%)" />
+              <RechartsTooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(37, 30%, 88%)" }} />
+              <Line type="monotone" dataKey="views" stroke="hsl(37, 91%, 55%)" strokeWidth={2} dot={{ r: 3 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </motion.div>
+
+        {/* Pie - Categories */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+          className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-heading font-bold text-foreground mb-4">📊 Articles par catégorie</h3>
+          {categoryData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie data={categoryData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="value"
+                  label={({ name, value }) => `${name} (${value})`}>
+                  {categoryData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                </Pie>
+                <RechartsTooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-10">Aucune donnée</p>
+          )}
+        </motion.div>
       </div>
+
+      {/* Bar Chart - Top articles */}
+      {topArticles.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
+          className="bg-card border border-border rounded-xl p-5 mb-8">
+          <h3 className="font-heading font-bold text-foreground mb-4">🏆 Top articles</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={topArticles} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(37, 30%, 88%)" />
+              <XAxis type="number" tick={{ fontSize: 11 }} stroke="hsl(28, 25%, 45%)" />
+              <YAxis type="category" dataKey="name" width={180} tick={{ fontSize: 11 }} stroke="hsl(28, 25%, 45%)" />
+              <RechartsTooltip />
+              <Bar dataKey="views" fill="hsl(37, 91%, 55%)" radius={[0, 6, 6, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </motion.div>
+      )}
 
       {/* Recent Posts Table */}
       <div className="bg-card border border-border rounded-xl">
@@ -175,21 +261,13 @@ export default function Dashboard() {
                     <tr key={post.id} className="hover:bg-secondary/30 transition-colors">
                       <td className="px-4 py-3">
                         <Link to={`/admin/posts/${post.id}/edit`} className="flex items-center gap-3 group">
-                          {post.cover_url && (
-                            <img src={post.cover_url} alt="" className="w-10 h-7 rounded object-cover flex-shrink-0" loading="lazy" width={40} height={28} />
-                          )}
-                          <span className="font-medium text-foreground group-hover:text-primary transition-colors truncate max-w-[200px]">
-                            {post.title}
-                          </span>
+                          {post.cover_url && <img src={post.cover_url} alt="" className="w-10 h-7 rounded object-cover flex-shrink-0" loading="lazy" width={40} height={28} />}
+                          <span className="font-medium text-foreground group-hover:text-primary transition-colors truncate max-w-[200px]">{post.title}</span>
                         </Link>
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground">{post.category}</td>
                       <td className="px-4 py-3">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                          post.status === "published"
-                            ? "bg-accent/10 text-accent"
-                            : "bg-muted text-muted-foreground"
-                        }`}>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${post.status === "published" ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"}`}>
                           {post.status === "published" ? "Publié" : "Brouillon"}
                         </span>
                       </td>
@@ -203,9 +281,7 @@ export default function Dashboard() {
           <div className="p-8 text-center text-muted-foreground">
             <p className="text-3xl mb-2">🐝</p>
             <p>Aucun article pour le moment.</p>
-            <Link to="/admin/posts/new" className="text-primary text-sm hover:underline mt-1 inline-block">
-              Créer votre premier article
-            </Link>
+            <Link to="/admin/posts/new" className="text-primary text-sm hover:underline mt-1 inline-block">Créer votre premier article</Link>
           </div>
         )}
       </div>

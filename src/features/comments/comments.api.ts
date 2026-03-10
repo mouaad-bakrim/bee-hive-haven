@@ -31,11 +31,11 @@ export function validateCommentInput(
 /**
  * Fetch comments for an article (post), newest first.
  */
-export async function getComments(articleId: string): Promise<CommentRow[]> {
+export async function getComments(postId: string): Promise<CommentRow[]> {
   const { data, error } = await (supabase as any)
     .from("comments")
     .select("*")
-    .eq("article_id", articleId)
+    .eq("post_id", postId)
     .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as CommentRow[];

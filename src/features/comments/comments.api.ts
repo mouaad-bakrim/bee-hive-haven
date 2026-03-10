@@ -31,7 +31,7 @@ export function validateCommentInput(
  * Fetch comments for an article (post), newest first.
  */
 export async function getComments(articleId: string): Promise<CommentRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("comments")
     .select("*")
     .eq("article_id", articleId)

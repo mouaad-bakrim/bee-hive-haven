@@ -82,6 +82,7 @@ function ToggleRow({ label, description, checked, onChange }: { label: string; d
 
 /* ───── sections config ───── */
 const SECTIONS = [
+  { id: "language", label: "Langue", icon: <Globe className="w-4 h-4" /> },
   { id: "general", label: "Général", icon: <Globe className="w-4 h-4" /> },
   { id: "appearance", label: "Apparence", icon: <Palette className="w-4 h-4" /> },
   { id: "theme", label: "Thème visuel", icon: <Brush className="w-4 h-4" /> },

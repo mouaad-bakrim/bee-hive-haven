@@ -45,6 +45,12 @@ export default function Index() {
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const paginated = filtered.slice((page - 1) * itemsPerPage, page * itemsPerPage);
   const popular = useMemo(() => [...articles].sort((a, b) => b.views - a.views).slice(0, 5), [articles]);
+  
+  const allTags = useMemo(() => {
+    const counts: Record<string, number> = {};
+    articles.forEach((a) => a.tags.forEach((t) => { counts[t] = (counts[t] || 0) + 1; }));
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 15);
+  }, [articles]);
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};

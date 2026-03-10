@@ -218,31 +218,82 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          address: string | null
+          contact_email: string | null
           created_at: string
           facebook_url: string | null
+          favicon_url: string | null
+          google_analytics_id: string | null
+          hero_image_url: string | null
           id: number
           instagram_url: string | null
+          logo_url: string | null
+          meta_description: string | null
+          meta_keywords: string | null
+          newsletter_enabled: boolean | null
+          newsletter_subtitle: string | null
+          newsletter_title: string | null
+          primary_color: string | null
           site_name: string | null
           slogan: string | null
+          tiktok_url: string | null
+          twitter_url: string | null
+          umami_website_id: string | null
           updated_at: string
+          whatsapp_number: string | null
+          youtube_url: string | null
         }
         Insert: {
+          address?: string | null
+          contact_email?: string | null
           created_at?: string
           facebook_url?: string | null
+          favicon_url?: string | null
+          google_analytics_id?: string | null
+          hero_image_url?: string | null
           id?: number
           instagram_url?: string | null
+          logo_url?: string | null
+          meta_description?: string | null
+          meta_keywords?: string | null
+          newsletter_enabled?: boolean | null
+          newsletter_subtitle?: string | null
+          newsletter_title?: string | null
+          primary_color?: string | null
           site_name?: string | null
           slogan?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
+          umami_website_id?: string | null
           updated_at?: string
+          whatsapp_number?: string | null
+          youtube_url?: string | null
         }
         Update: {
+          address?: string | null
+          contact_email?: string | null
           created_at?: string
           facebook_url?: string | null
+          favicon_url?: string | null
+          google_analytics_id?: string | null
+          hero_image_url?: string | null
           id?: number
           instagram_url?: string | null
+          logo_url?: string | null
+          meta_description?: string | null
+          meta_keywords?: string | null
+          newsletter_enabled?: boolean | null
+          newsletter_subtitle?: string | null
+          newsletter_title?: string | null
+          primary_color?: string | null
           site_name?: string | null
           slogan?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
+          umami_website_id?: string | null
           updated_at?: string
+          whatsapp_number?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }

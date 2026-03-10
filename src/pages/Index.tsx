@@ -18,8 +18,6 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
-const ITEMS_PER_PAGE = 7;
-
 export default function Index() {
   const [category, setCategory] = useState<string>("all");
   const [page, setPage] = useState(1);
@@ -27,6 +25,12 @@ export default function Index() {
   const { articles, loading, error } = useRealtimePublishedArticles({ orderBy: "published_at" });
   const { data: categories } = useCategories();
   const { data: settings } = useSiteSettings();
+
+  const showHero = settings?.show_hero !== false;
+  const showBuzz = settings?.show_buzz_section !== false;
+  const showCategoriesFilter = settings?.show_categories_filter !== false;
+  const showNewsletter = settings?.show_newsletter !== false;
+  const itemsPerPage = settings?.articles_per_page ?? 10;
 
   useEffect(() => {
     if (error) toast({ title: "Erreur", description: error, variant: "destructive" });
@@ -37,60 +41,54 @@ export default function Index() {
     return articles.filter((a) => a.category === category);
   }, [category, articles]);
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginated = filtered.slice((page - 1) * itemsPerPage, page * itemsPerPage);
   const popular = useMemo(() => [...articles].sort((a, b) => b.views - a.views).slice(0, 5), [articles]);
 
-  // Count articles per category
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     articles.forEach((a) => { counts[a.category] = (counts[a.category] || 0) + 1; });
     return counts;
   }, [articles]);
 
-  const handleCategoryChange = (cat: string) => {
-    setCategory(cat);
-    setPage(1);
-  };
+  const handleCategoryChange = (cat: string) => { setCategory(cat); setPage(1); };
 
   const socialLinks = [
-    { url: settings?.instagram_url, icon: <Instagram className="w-4 h-4" />, label: "Instagram" },
-    { url: settings?.facebook_url, icon: <Facebook className="w-4 h-4" />, label: "Facebook" },
-    { url: settings?.youtube_url, icon: <Youtube className="w-4 h-4" />, label: "YouTube" },
-    { url: settings?.tiktok_url, icon: <TikTokIcon className="w-4 h-4" />, label: "TikTok" },
-    { url: settings?.twitter_url, icon: <Twitter className="w-4 h-4" />, label: "Twitter" },
-  ].filter((s) => s.url);
+    { url: settings?.instagram_url, enabled: settings?.instagram_enabled, icon: <Instagram className="w-4 h-4" />, label: "Instagram" },
+    { url: settings?.facebook_url, enabled: settings?.facebook_enabled, icon: <Facebook className="w-4 h-4" />, label: "Facebook" },
+    { url: settings?.youtube_url, enabled: settings?.youtube_enabled, icon: <Youtube className="w-4 h-4" />, label: "YouTube" },
+    { url: settings?.tiktok_url, enabled: settings?.tiktok_enabled, icon: <TikTokIcon className="w-4 h-4" />, label: "TikTok" },
+    { url: settings?.twitter_url, enabled: settings?.twitter_enabled, icon: <Twitter className="w-4 h-4" />, label: "Twitter" },
+  ].filter((s) => s.enabled !== false && s.url);
 
   return (
     <>
-      <HeroSection />
+      {showHero && <HeroSection />}
 
       <section id="articles" className="container mx-auto px-4 py-12">
-        <div className="flex flex-wrap gap-2 mb-8">
-          <button
-            onClick={() => handleCategoryChange("all")}
-            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-              category === "all"
-                ? "honey-gradient text-primary-foreground shadow-md"
-                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            }`}
-          >
-            Tous
-          </button>
-          {(categories ?? []).map((cat) => (
+        {showCategoriesFilter && (
+          <div className="flex flex-wrap gap-2 mb-8">
             <button
-              key={cat.slug}
-              onClick={() => handleCategoryChange(cat.slug)}
+              onClick={() => handleCategoryChange("all")}
               className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                category === cat.slug
-                  ? "honey-gradient text-primary-foreground shadow-md"
-                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                category === "all" ? "honey-gradient text-primary-foreground shadow-md" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
               }`}
             >
-              {cat.name}
+              Tous
             </button>
-          ))}
-        </div>
+            {(categories ?? []).map((cat) => (
+              <button
+                key={cat.slug}
+                onClick={() => handleCategoryChange(cat.slug)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                  category === cat.slug ? "honey-gradient text-primary-foreground shadow-md" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
@@ -121,9 +119,7 @@ export default function Index() {
                           document.getElementById("articles")?.scrollIntoView({ behavior: "smooth" });
                         }}
                         className={`w-10 h-10 rounded-full text-sm font-semibold transition-all ${
-                          page === i + 1
-                            ? "honey-gradient text-primary-foreground shadow-md"
-                            : "bg-secondary text-secondary-foreground hover:bg-primary/10"
+                          page === i + 1 ? "honey-gradient text-primary-foreground shadow-md" : "bg-secondary text-secondary-foreground hover:bg-primary/10"
                         }`}
                       >
                         {i + 1}
@@ -137,21 +133,23 @@ export default function Index() {
 
           <aside className="lg:col-span-1">
             <div className="space-y-8">
-              <div className="bg-card rounded-xl border border-border p-5">
-                <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-primary" /> Ça fait le buzz 🐝
-                </h3>
-                <div className="space-y-3">
-                  {popular.slice(0, 4).map((a) => (
-                    <Link key={a.id} to={`/article/${a.slug}`} className="flex gap-3 group">
-                      <img src={a.coverImage || "https://placehold.co/64x48?text=🐝"} alt="" className="w-16 h-12 rounded-md object-cover flex-shrink-0" loading="lazy" />
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">{a.title}</p>
-                      </div>
-                    </Link>
-                  ))}
+              {showBuzz && (
+                <div className="bg-card rounded-xl border border-border p-5">
+                  <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-primary" /> Ça fait le buzz 🐝
+                  </h3>
+                  <div className="space-y-3">
+                    {popular.slice(0, 4).map((a) => (
+                      <Link key={a.id} to={`/article/${a.slug}`} className="flex gap-3 group">
+                        <img src={a.coverImage || "https://placehold.co/64x48?text=🐝"} alt="" className="w-16 h-12 rounded-md object-cover flex-shrink-0" loading="lazy" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">{a.title}</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="bg-card rounded-xl border border-border p-5">
                 <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
                   <Eye className="w-4 h-4 text-primary" /> Les plus lus

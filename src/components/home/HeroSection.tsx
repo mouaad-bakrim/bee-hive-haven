@@ -20,7 +20,6 @@ const FLOATING_ICONS = [
   { emoji: "🌸", x: "50%", y: "10%", size: 24, dur: 7.5 },
 ];
 
-// TikTok icon (not in lucide)
 function TikTokIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -34,13 +33,10 @@ export default function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { data: settings } = useSiteSettings();
 
-  const siteName = settings?.site_name || "Coin des Apiculteurs";
-  const slogan = settings?.slogan || "Ici, on parle ruches, miel et passion ❤️\nPartagez vos expériences, posez vos questions,\net faisons grandir nos colonies ensemble 🍯";
-  const instagramUrl = settings?.instagram_url || "";
-  const facebookUrl = settings?.facebook_url || "";
-  const youtubeUrl = settings?.youtube_url || "";
-  const tiktokUrl = settings?.tiktok_url || "";
-  const twitterUrl = settings?.twitter_url || "";
+  const heroTitle = settings?.hero_title || "Bienvenue au Coin des Apiculteurs 🐝";
+  const heroSubtitle = settings?.hero_subtitle || settings?.slogan || "Ici, on parle ruches, miel et passion";
+  const ctaText = settings?.hero_cta_text || "Découvrir les articles";
+  const showBeeAnimations = settings?.show_bee_animations !== false;
 
   const slides = DEFAULT_SLIDES;
 
@@ -62,10 +58,7 @@ export default function HeroSection() {
     const throttled = (e: MouseEvent) => {
       if (!ticking) {
         ticking = true;
-        requestAnimationFrame(() => {
-          handleMouse(e);
-          ticking = false;
-        });
+        requestAnimationFrame(() => { handleMouse(e); ticking = false; });
       }
     };
     window.addEventListener("mousemove", throttled);
@@ -73,12 +66,12 @@ export default function HeroSection() {
   }, [handleMouse]);
 
   const socialLinks = [
-    { url: instagramUrl, icon: <Instagram className="w-5 h-5" />, label: "Instagram" },
-    { url: facebookUrl, icon: <Facebook className="w-5 h-5" />, label: "Facebook" },
-    { url: youtubeUrl, icon: <Youtube className="w-5 h-5" />, label: "YouTube" },
-    { url: tiktokUrl, icon: <TikTokIcon className="w-5 h-5" />, label: "TikTok" },
-    { url: twitterUrl, icon: <Twitter className="w-5 h-5" />, label: "Twitter" },
-  ].filter((s) => s.url);
+    { url: settings?.instagram_url, enabled: settings?.instagram_enabled, icon: <Instagram className="w-5 h-5" />, label: "Instagram" },
+    { url: settings?.facebook_url, enabled: settings?.facebook_enabled, icon: <Facebook className="w-5 h-5" />, label: "Facebook" },
+    { url: settings?.youtube_url, enabled: settings?.youtube_enabled, icon: <Youtube className="w-5 h-5" />, label: "YouTube" },
+    { url: settings?.tiktok_url, enabled: settings?.tiktok_enabled, icon: <TikTokIcon className="w-5 h-5" />, label: "TikTok" },
+    { url: settings?.twitter_url, enabled: settings?.twitter_enabled, icon: <Twitter className="w-5 h-5" />, label: "Twitter" },
+  ].filter((s) => s.enabled !== false && s.url);
 
   return (
     <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
@@ -105,15 +98,13 @@ export default function HeroSection() {
           <button
             key={i}
             onClick={() => setCurrentSlide(i)}
-            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-              i === currentSlide ? "bg-primary w-8" : "bg-background/40 hover:bg-background/60"
-            }`}
+            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === currentSlide ? "bg-primary w-8" : "bg-background/40 hover:bg-background/60"}`}
             aria-label={`Slide ${i + 1}`}
           />
         ))}
       </div>
 
-      {FLOATING_ICONS.map((icon, i) => (
+      {showBeeAnimations && FLOATING_ICONS.map((icon, i) => (
         <motion.span
           key={i}
           className="absolute z-[15] pointer-events-none select-none"
@@ -133,7 +124,7 @@ export default function HeroSection() {
           className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6"
           style={{ x: mouse.x * 8, y: mouse.y * 5 }}
         >
-          Bienvenue au {siteName} 🐝
+          {heroTitle}
         </motion.h1>
 
         <motion.p
@@ -143,8 +134,8 @@ export default function HeroSection() {
           className="max-w-2xl mx-auto text-lg sm:text-xl text-background/85 leading-relaxed mb-8"
           style={{ x: mouse.x * 5, y: mouse.y * 3 }}
         >
-          {slogan.split("\n").map((line, i) => (
-            <span key={i}>{line}{i < slogan.split("\n").length - 1 && <br />}</span>
+          {heroSubtitle.split("\n").map((line, i) => (
+            <span key={i}>{line}{i < heroSubtitle.split("\n").length - 1 && <br />}</span>
           ))}
         </motion.p>
 
@@ -157,26 +148,18 @@ export default function HeroSection() {
           <Link
             to="/#articles"
             onClick={() => {
-              setTimeout(() => {
-                document.getElementById("articles")?.scrollIntoView({ behavior: "smooth" });
-              }, 100);
+              setTimeout(() => { document.getElementById("articles")?.scrollIntoView({ behavior: "smooth" }); }, 100);
             }}
             className="group relative inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-primary text-primary-foreground font-bold text-base shadow-lg transition-all hover:scale-105"
           >
-            <span className="relative">🍯 Découvrir les articles</span>
+            <span className="relative">🍯 {ctaText}</span>
           </Link>
 
           {socialLinks.length > 0 && (
             <div className="flex items-center gap-3">
               {socialLinks.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={s.label}
-                  className="w-11 h-11 rounded-full bg-background/15 backdrop-blur-sm flex items-center justify-center text-background hover:bg-primary hover:text-primary-foreground transition-all"
-                >
+                <a key={s.label} href={s.url!} target="_blank" rel="noopener noreferrer" aria-label={s.label}
+                  className="w-11 h-11 rounded-full bg-background/15 backdrop-blur-sm flex items-center justify-center text-background hover:bg-primary hover:text-primary-foreground transition-all">
                   {s.icon}
                 </a>
               ))}

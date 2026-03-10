@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Search, Menu, X, Instagram, Facebook, Youtube, Twitter } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useCategories } from "@/hooks/useCategories";
 
 function TikTokIcon({ className }: { className?: string }) {
   return (
@@ -12,24 +13,21 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
-const navItems = [
-  { label: "Accueil", path: "/" },
-  { label: "Actualité", path: "/categorie/actualite" },
-  { label: "Histoires", path: "/categorie/histoires" },
-  { label: "Cours gratuit", path: "/categorie/cours" },
-  { label: "Santé", path: "/categorie/sante" },
-  { label: "Buzz", path: "/categorie/buzz" },
-];
-
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const { data: settings } = useSiteSettings();
+  const { data: categories } = useCategories();
 
   const siteName = settings?.site_name || "Coin des Apiculteurs";
   const logoUrl = settings?.logo_url || "";
+
+  const navItems = [
+    { label: "Accueil", path: "/" },
+    ...(categories ?? []).map((c) => ({ label: c.name, path: `/categorie/${c.slug}` })),
+  ];
 
   const socialLinks = [
     { url: settings?.instagram_url, icon: <Instagram className="w-4 h-4" />, label: "Instagram" },

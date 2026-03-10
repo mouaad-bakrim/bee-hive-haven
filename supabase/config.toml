@@ -1,1 +1,4 @@
 project_id = "bicwobqfngnapcxnvvjf"
+
+[functions.umami-proxy]
+verify_jwt = false

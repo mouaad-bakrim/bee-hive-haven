@@ -18,7 +18,7 @@ export interface SaveSiteSettingsInput {
 }
 
 export async function getSettings(): Promise<SiteSettings | null> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("site_settings")
     .select("*")
     .eq("id", 1)
@@ -28,7 +28,7 @@ export async function getSettings(): Promise<SiteSettings | null> {
 }
 
 export async function saveSettings(input: SaveSiteSettingsInput): Promise<SiteSettings> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("site_settings")
     .upsert(
       {

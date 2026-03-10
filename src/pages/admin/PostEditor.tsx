@@ -69,12 +69,13 @@ export default function PostEditor() {
 
   useEffect(() => {
     if (!isEdit || !id) return;
-    supabase
-      .from("posts")
-      .select("*")
-      .eq("id", id)
-      .single()
-      .then(({ data, error }) => {
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("posts")
+          .select("*")
+          .eq("id", id)
+          .single();
         if (error) {
           toast({ title: "Erreur", description: error.message, variant: "destructive" });
         } else if (data) {
@@ -92,9 +93,12 @@ export default function PostEditor() {
             meta_description: data.meta_description || "",
           });
         }
+      } catch {
+        // silently fail
+      } finally {
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      }
+    })();
   }, [id, isEdit, toast]);
 
   const handleChange = (field: keyof PostForm, value: any) => {

@@ -73,7 +73,7 @@ export default function ArticlePage() {
     if (!article) return;
     const validation = validateCommentInput(commentName, commentContent);
     if (!validation.ok) {
-      toast({ title: "Erreur", description: validation.error, variant: "destructive" });
+      toast({ title: "Erreur", description: (validation as { ok: false; error: string }).error, variant: "destructive" });
       return;
     }
     setSubmitting(true);

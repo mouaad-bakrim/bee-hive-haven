@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Search, Menu, X, Instagram, Facebook, Youtube, Twitter } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -19,12 +19,44 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: settings } = useSiteSettings();
   const { data: categories } = useCategories();
   const { t } = useTranslation();
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const siteName = settings?.site_name || t("site_name");
   const logoUrl = settings?.logo_url || "";
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+    setSearchOpen(false);
+  }, [location.pathname]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMobileOpen(false);
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMobileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [mobileOpen]);
 
   const navItems = [
     { label: t("nav_home"), path: "/" },
@@ -51,10 +83,12 @@ export default function Header() {
     }
   };
 
+  const closeMenu = () => setMobileOpen(false);
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-b border-border shadow-sm">
+    <header ref={menuRef} className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-b border-border shadow-sm">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+        <Link to="/" className="flex items-center gap-2 flex-shrink-0" onClick={closeMenu}>
           {logoUrl ? (
             <img src={logoUrl} alt={siteName} className="h-8 w-auto" />
           ) : (
@@ -115,7 +149,7 @@ export default function Header() {
             className="lg:hidden border-t border-border overflow-hidden bg-card">
             <nav className="container mx-auto px-4 py-4 flex flex-col gap-1">
               {navItems.map((item) => (
-                <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}
+                <Link key={item.path} to={item.path} onClick={closeMenu}
                   className="px-4 py-3 text-sm font-medium text-foreground/80 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">
                   {item.label}
                 </Link>

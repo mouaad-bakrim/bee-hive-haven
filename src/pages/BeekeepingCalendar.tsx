@@ -84,23 +84,23 @@ export default function BeekeepingCalendar() {
   const month = MONTHS[selected];
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="container mx-auto px-4 py-12">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="container mx-auto px-4 py-8 sm:py-12">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <h1 className="font-heading text-3xl font-bold text-foreground mb-2">
-            <Calendar className="w-8 h-8 inline-block mr-2 text-primary" />
+        <div className="text-center mb-8 sm:mb-10">
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground mb-2">
+            <Calendar className="w-6 h-6 sm:w-8 sm:h-8 inline-block mr-2 text-primary" />
             Calendrier Apicole
           </h1>
-          <p className="text-muted-foreground">Les activités essentielles mois par mois pour vos ruches.</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Les activités essentielles mois par mois pour vos ruches.</p>
         </div>
 
         {/* Month selector */}
-        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-2 mb-8">
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 mb-6 sm:mb-8">
           {MONTHS.map((m, i) => (
             <button
               key={m.name}
               onClick={() => setSelected(i)}
-              className={`p-2 rounded-xl text-center transition-all ${
+              className={`p-2 rounded-xl text-center transition-all min-h-[44px] ${
                 selected === i
                   ? "honey-gradient text-primary-foreground shadow-md scale-105"
                   : i === currentMonth
@@ -108,8 +108,8 @@ export default function BeekeepingCalendar() {
                   : "bg-card border border-border text-foreground hover:border-primary/30"
               }`}
             >
-              <span className="text-lg block">{m.emoji}</span>
-              <span className="text-xs font-medium">{m.name.slice(0, 3)}</span>
+              <span className="text-base sm:text-lg block">{m.emoji}</span>
+              <span className="text-[10px] sm:text-xs font-medium">{m.name.slice(0, 3)}</span>
             </button>
           ))}
         </div>
@@ -119,34 +119,34 @@ export default function BeekeepingCalendar() {
           key={selected}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`rounded-xl border p-6 md:p-8 ${month.color}`}
+          className={`rounded-xl border p-4 sm:p-6 md:p-8 ${month.color}`}
         >
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-4xl">{month.emoji}</span>
+          <div className="flex items-center gap-3 mb-4 sm:mb-6">
+            <span className="text-3xl sm:text-4xl">{month.emoji}</span>
             <div>
-              <h2 className="font-heading text-2xl font-bold text-foreground">{month.name}</h2>
-              <p className="text-primary font-medium">{month.title}</p>
+              <h2 className="font-heading text-xl sm:text-2xl font-bold text-foreground">{month.name}</h2>
+              <p className="text-primary font-medium text-sm sm:text-base">{month.title}</p>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <h3 className="font-heading font-bold text-foreground mb-3">📋 Tâches du mois</h3>
+              <h3 className="font-heading font-bold text-foreground mb-3 text-sm sm:text-base">📋 Tâches du mois</h3>
               <ul className="space-y-2">
                 {month.tasks.map((task, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm">
                     <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-xs font-bold mt-0.5">
                       {i + 1}
                     </span>
-                    <span className="text-foreground">{task}</span>
+                    <span className="text-foreground break-words">{task}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
             <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-              <h3 className="font-heading font-bold text-foreground mb-2">💡 Le saviez-vous ?</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{month.tip}</p>
+              <h3 className="font-heading font-bold text-foreground mb-2 text-sm sm:text-base">💡 Le saviez-vous ?</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed break-words">{month.tip}</p>
             </div>
           </div>
         </motion.div>

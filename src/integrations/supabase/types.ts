@@ -360,6 +360,9 @@ export type Database = {
           newsletter_enabled: boolean | null
           newsletter_subtitle: string | null
           newsletter_title: string | null
+          pinterest_enabled: boolean | null
+          pinterest_url: string | null
+          pinterest_verification: string | null
           primary_color: string | null
           public_registration: boolean | null
           show_author: boolean | null
@@ -416,6 +419,9 @@ export type Database = {
           newsletter_enabled?: boolean | null
           newsletter_subtitle?: string | null
           newsletter_title?: string | null
+          pinterest_enabled?: boolean | null
+          pinterest_url?: string | null
+          pinterest_verification?: string | null
           primary_color?: string | null
           public_registration?: boolean | null
           show_author?: boolean | null
@@ -472,6 +478,9 @@ export type Database = {
           newsletter_enabled?: boolean | null
           newsletter_subtitle?: string | null
           newsletter_title?: string | null
+          pinterest_enabled?: boolean | null
+          pinterest_url?: string | null
+          pinterest_verification?: string | null
           primary_color?: string | null
           public_registration?: boolean | null
           show_author?: boolean | null

@@ -24,6 +24,14 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
+function PinterestIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z" />
+    </svg>
+  );
+}
+
 /* ───── tiny helpers ───── */
 function SectionCard({
   id, icon, title, description, saving, onSave, dirty, children,
@@ -33,13 +41,13 @@ function SectionCard({
 }) {
   return (
     <section id={id} className="bg-card border border-border rounded-xl overflow-hidden">
-      <div className="flex items-start justify-between p-5 pb-0">
+      <div className="flex flex-col sm:flex-items-start sm:flex-row sm:justify-between p-4 sm:p-5 pb-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
             {icon}
           </div>
           <div>
-            <h2 className="font-heading font-bold text-foreground flex items-center gap-2">
+            <h2 className="font-heading font-bold text-foreground text-sm sm:text-base flex items-center gap-2">
               {title}
               {dirty && <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" title="Modifications non sauvegardées" />}
             </h2>
@@ -47,9 +55,9 @@ function SectionCard({
           </div>
         </div>
       </div>
-      <div className="p-5 space-y-4">{children}</div>
-      <div className="px-5 pb-5">
-        <Button onClick={onSave} disabled={saving} size="sm" className="gap-1.5">
+      <div className="p-4 sm:p-5 space-y-4">{children}</div>
+      <div className="px-4 sm:px-5 pb-4 sm:pb-5">
+        <Button onClick={onSave} disabled={saving} size="sm" className="gap-1.5 min-h-[44px]">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Sauvegarder
         </Button>
@@ -137,6 +145,9 @@ export default function AdminSettings() {
       twitter_enabled: data.twitter_enabled ?? false,
       tiktok_enabled: data.tiktok_enabled ?? false,
       whatsapp_enabled: data.whatsapp_enabled ?? false,
+      pinterest_url: (data as any).pinterest_url ?? "",
+      pinterest_enabled: (data as any).pinterest_enabled ?? false,
+      pinterest_verification: (data as any).pinterest_verification ?? "5457e995b2163fa4bca57fd112f42dc4",
       show_hero: data.show_hero ?? true,
       show_buzz_section: data.show_buzz_section ?? true,
       show_newsletter: data.show_newsletter ?? true,
@@ -165,6 +176,20 @@ export default function AdminSettings() {
     setF(vals);
     setOriginal(vals);
   }, [data]);
+
+  // Pinterest verification meta tag
+  useEffect(() => {
+    const code = (f as any).pinterest_verification;
+    if (code) {
+      let meta = document.querySelector('meta[name="p:domain_verify"]');
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.setAttribute("name", "p:domain_verify");
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute("content", code);
+    }
+  }, [(f as any).pinterest_verification]);
 
   const isDirty = useCallback(
     (keys: (keyof Fields)[]) => keys.some((k) => JSON.stringify(f[k]) !== JSON.stringify(original[k])),
@@ -199,7 +224,7 @@ export default function AdminSettings() {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-6">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col lg:flex-row gap-6">
       {/* Sidebar nav */}
       <aside className="hidden lg:block w-52 shrink-0 sticky top-24 self-start">
         <nav className="space-y-1">
@@ -219,7 +244,7 @@ export default function AdminSettings() {
       {/* Main content */}
       <div className="flex-1 max-w-2xl space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="font-heading text-2xl font-bold text-foreground">⚙️ Paramètres</h1>
+          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">⚙️ Paramètres</h1>
         </div>
 
         {/* Search */}
@@ -253,7 +278,7 @@ export default function AdminSettings() {
                   key={lang.id}
                   type="button"
                   onClick={() => set("language" as any, lang.id)}
-                  className={`px-6 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                  className={`px-4 sm:px-6 py-3 rounded-lg border-2 text-sm font-medium transition-all min-h-[44px] ${
                     (f as any).language === lang.id ? "border-primary ring-2 ring-primary/20 bg-primary/5" : "border-border hover:border-primary/40"
                   }`}
                 >
@@ -347,7 +372,7 @@ export default function AdminSettings() {
                     key={p.id}
                     type="button"
                     onClick={() => set("theme_preset", p.id)}
-                    className={`p-3 rounded-lg border-2 text-center transition-all ${
+                    className={`p-3 rounded-lg border-2 text-center transition-all min-h-[44px] ${
                       f.theme_preset === p.id ? "border-primary ring-2 ring-primary/20" : "border-border hover:border-primary/40"
                     }`}
                   >
@@ -401,7 +426,7 @@ export default function AdminSettings() {
         )}
 
         {/* ── Social ── */}
-        {matchSection("réseaux sociaux instagram facebook youtube twitter tiktok whatsapp") && (
+        {matchSection("réseaux sociaux instagram facebook youtube twitter tiktok whatsapp pinterest") && (
           <SectionCard
             id="social"
             icon={<Share2 className="w-5 h-5" />}
@@ -412,11 +437,13 @@ export default function AdminSettings() {
               "instagram_url", "instagram_enabled", "facebook_url", "facebook_enabled",
               "youtube_url", "youtube_enabled", "twitter_url", "twitter_enabled",
               "tiktok_url", "tiktok_enabled", "whatsapp_number", "whatsapp_enabled",
+              "pinterest_url" as keyof Fields, "pinterest_enabled" as keyof Fields, "pinterest_verification" as keyof Fields,
             ])}
             onSave={() => handleSave("social", [
               "instagram_url", "instagram_enabled", "facebook_url", "facebook_enabled",
               "youtube_url", "youtube_enabled", "twitter_url", "twitter_enabled",
               "tiktok_url", "tiktok_enabled", "whatsapp_number", "whatsapp_enabled",
+              "pinterest_url" as keyof Fields, "pinterest_enabled" as keyof Fields, "pinterest_verification" as keyof Fields,
             ])}
           >
             {/* Instagram */}
@@ -477,6 +504,21 @@ export default function AdminSettings() {
               </div>
               {f.whatsapp_enabled && (
                 <Input value={f.whatsapp_number ?? ""} onChange={(e) => set("whatsapp_number", e.target.value)} placeholder="+33 6 12 34 56 78" />
+              )}
+            </div>
+            {/* Pinterest */}
+            <div className="space-y-2 p-3 rounded-lg bg-muted/30">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-sm font-medium"><PinterestIcon className="w-4 h-4" /> Pinterest</span>
+                <Switch checked={(f as any).pinterest_enabled ?? false} onCheckedChange={(v) => set("pinterest_enabled" as any, v)} />
+              </div>
+              {(f as any).pinterest_enabled && (
+                <>
+                  <Input value={(f as any).pinterest_url ?? ""} onChange={(e) => set("pinterest_url" as any, e.target.value)} placeholder="https://pinterest.com/votre-compte" />
+                  <Field label="Code de vérification Pinterest" hint="Trouvez ce code dans Pinterest → Paramètres → Lien vers Pinterest → Sites Web">
+                    <Input value={(f as any).pinterest_verification ?? ""} onChange={(e) => set("pinterest_verification" as any, e.target.value)} placeholder="5457e995b2163fa4bca57fd112f42dc4" />
+                  </Field>
+                </>
               )}
             </div>
           </SectionCard>

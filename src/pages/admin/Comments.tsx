@@ -65,14 +65,14 @@ export default function Comments() {
 
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold text-foreground mb-6">💬 Commentaires</h1>
+      <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground mb-6">💬 Commentaires</h1>
 
       <div className="flex flex-wrap gap-2 mb-6">
         {FILTERS.map((f) => (
           <button
             key={f.value}
             onClick={() => setFilter(f.value)}
-            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+            className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all min-h-[44px] ${
               filter === f.value
                 ? "honey-gradient text-primary-foreground shadow-md"
                 : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
@@ -85,13 +85,13 @@ export default function Comments() {
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-xs sm:text-sm">
             <thead>
               <tr className="border-b border-border text-left">
-                <th className="px-4 py-3 font-medium text-muted-foreground">Auteur</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Commentaire</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Statut</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground text-right">Actions</th>
+                <th className="px-3 sm:px-4 py-3 font-medium text-muted-foreground">Auteur</th>
+                <th className="px-3 sm:px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Commentaire</th>
+                <th className="px-3 sm:px-4 py-3 font-medium text-muted-foreground">Statut</th>
+                <th className="px-3 sm:px-4 py-3 font-medium text-muted-foreground text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -101,13 +101,13 @@ export default function Comments() {
                   ))
                 : comments.map((c) => (
                     <tr key={c.id} className="hover:bg-secondary/30 transition-colors">
-                      <td className="px-4 py-3">
+                      <td className="px-3 sm:px-4 py-3">
                         <p className="font-medium text-foreground">{c.author_name}</p>
-                        <p className="text-xs text-muted-foreground">{c.author_email}</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate max-w-[120px] sm:max-w-none">{c.author_email}</p>
                       </td>
-                      <td className="px-4 py-3 hidden md:table-cell text-muted-foreground max-w-xs truncate">{c.content}</td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                      <td className="px-3 sm:px-4 py-3 hidden md:table-cell text-muted-foreground max-w-xs truncate">{c.content}</td>
+                      <td className="px-3 sm:px-4 py-3">
+                        <span className={`text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-semibold ${
                           c.status === "approved" ? "bg-accent/10 text-accent"
                             : c.status === "spam" ? "bg-destructive/10 text-destructive"
                             : "bg-primary/10 text-primary"
@@ -115,19 +115,19 @@ export default function Comments() {
                           {c.status === "approved" ? "Approuvé" : c.status === "spam" ? "Spam" : "En attente"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="px-3 sm:px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-0.5">
                           {c.status !== "approved" && (
-                            <Button size="icon" variant="ghost" onClick={() => updateStatus(c.id, "approved")} aria-label="Approuver">
+                            <Button size="icon" variant="ghost" onClick={() => updateStatus(c.id, "approved")} aria-label="Approuver" className="min-h-[44px] min-w-[44px]">
                               <CheckCircle className="w-4 h-4 text-accent" />
                             </Button>
                           )}
                           {c.status !== "spam" && (
-                            <Button size="icon" variant="ghost" onClick={() => updateStatus(c.id, "spam")} aria-label="Spam">
+                            <Button size="icon" variant="ghost" onClick={() => updateStatus(c.id, "spam")} aria-label="Spam" className="min-h-[44px] min-w-[44px]">
                               <XCircle className="w-4 h-4 text-primary" />
                             </Button>
                           )}
-                          <Button size="icon" variant="ghost" onClick={() => deleteComment(c.id)} aria-label="Supprimer">
+                          <Button size="icon" variant="ghost" onClick={() => deleteComment(c.id)} aria-label="Supprimer" className="min-h-[44px] min-w-[44px]">
                             <Trash2 className="w-4 h-4 text-destructive" />
                           </Button>
                         </div>

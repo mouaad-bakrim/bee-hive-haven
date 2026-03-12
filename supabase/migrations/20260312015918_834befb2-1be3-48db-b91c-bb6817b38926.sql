@@ -1,0 +1,4 @@
+ALTER TABLE site_settings 
+ADD COLUMN IF NOT EXISTS pinterest_url TEXT DEFAULT '',
+ADD COLUMN IF NOT EXISTS pinterest_enabled BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS pinterest_verification TEXT DEFAULT '5457e995b2163fa4bca57fd112f42dc4';

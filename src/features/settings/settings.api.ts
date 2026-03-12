@@ -9,6 +9,9 @@ export interface SiteSettings {
   youtube_url: string | null;
   tiktok_url: string | null;
   twitter_url: string | null;
+  pinterest_url: string | null;
+  pinterest_enabled: boolean | null;
+  pinterest_verification: string | null;
   meta_description: string | null;
   meta_keywords: string | null;
   google_analytics_id: string | null;

@@ -73,7 +73,6 @@ export default function Dashboard() {
         ]);
         if (!cancelled) {
           setPosts(articlesRes as Post[]);
-          // Aggregate views by date
           const byDate: Record<string, number> = {};
           (viewsRes.data ?? []).forEach((r) => {
             byDate[r.view_date] = (byDate[r.view_date] || 0) + (r.count || 0);
@@ -123,13 +122,11 @@ export default function Dashboard() {
     return list;
   }, [stats]);
 
-  // Top 5 articles by views
   const topArticles = useMemo(() =>
-    [...posts].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5).map((p) => ({ name: p.title.length > 30 ? p.title.slice(0, 30) + "…" : p.title, views: p.views || 0 })),
+    [...posts].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5).map((p) => ({ name: p.title.length > 25 ? p.title.slice(0, 25) + "…" : p.title, views: p.views || 0 })),
     [posts]
   );
 
-  // Articles by category
   const categoryData = useMemo(() => {
     const counts: Record<string, number> = {};
     posts.forEach((p) => { counts[p.category] = (counts[p.category] || 0) + 1; });
@@ -149,33 +146,33 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold text-foreground mb-6">Tableau de bord</h1>
+      <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">Tableau de bord</h1>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 mb-6 md:mb-8">
         {loading
-          ? Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-24 rounded-xl bg-muted animate-pulse" />)
+          ? Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-20 md:h-24 rounded-xl bg-muted animate-pulse" />)
           : cards.map((c, i) => (
               <motion.div key={c.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                className="bg-card border border-border rounded-xl p-4 hover:honey-shadow hover:-translate-y-0.5 transition-all duration-300">
-                <div className="flex items-center gap-2 mb-2">
+                className="bg-card border border-border rounded-xl p-3 md:p-4 hover:honey-shadow hover:-translate-y-0.5 transition-all duration-300">
+                <div className="flex items-center gap-2 mb-1 md:mb-2">
                   <c.icon className={`w-4 h-4 ${c.color}`} />
-                  <span className="text-xs text-muted-foreground font-medium">{c.label}</span>
+                  <span className="text-[10px] md:text-xs text-muted-foreground font-medium">{c.label}</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground"><AnimatedCounter value={typeof c.value === "number" ? c.value : 0} /></p>
+                <p className="text-lg md:text-2xl font-bold text-foreground"><AnimatedCounter value={typeof c.value === "number" ? c.value : 0} /></p>
               </motion.div>
             ))}
       </div>
 
       {/* Insights */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-        className="bg-card border border-border rounded-xl p-5 mb-8">
-        <h2 className="font-heading font-bold text-foreground mb-3 flex items-center gap-2">
+        className="bg-card border border-border rounded-xl p-4 md:p-5 mb-6 md:mb-8">
+        <h2 className="font-heading font-bold text-foreground mb-3 flex items-center gap-2 text-sm md:text-base">
           <Lightbulb className="w-4 h-4 text-primary" /> Insights
         </h2>
         <ul className="space-y-2">
           {insights.map((ins, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+            <li key={i} className="flex items-start gap-2 text-xs md:text-sm text-muted-foreground">
               <span className="text-primary mt-0.5">•</span>{ins}
             </li>
           ))}
@@ -183,26 +180,28 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Line Chart - Real views 7 days */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
-          className="lg:col-span-2 bg-card border border-border rounded-xl p-5">
-          <h3 className="font-heading font-bold text-foreground mb-4">📈 Vues des 7 derniers jours</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={viewsData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(37, 30%, 88%)" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(28, 25%, 45%)" />
-              <YAxis tick={{ fontSize: 11 }} stroke="hsl(28, 25%, 45%)" />
-              <RechartsTooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(37, 30%, 88%)" }} />
-              <Line type="monotone" dataKey="views" stroke="hsl(37, 91%, 55%)" strokeWidth={2} dot={{ r: 3 }} />
-            </LineChart>
-          </ResponsiveContainer>
+          className="lg:col-span-2 bg-card border border-border rounded-xl p-4 md:p-5">
+          <h3 className="font-heading font-bold text-foreground mb-4 text-sm md:text-base">📈 Vues des 7 derniers jours</h3>
+          <div className="overflow-x-auto">
+            <div className="min-w-[300px]">
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={viewsData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(37, 30%, 88%)" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(28, 25%, 45%)" />
+                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(28, 25%, 45%)" />
+                  <RechartsTooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(37, 30%, 88%)" }} />
+                  <Line type="monotone" dataKey="views" stroke="hsl(37, 91%, 55%)" strokeWidth={2} dot={{ r: 3 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Pie - Categories */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-          className="bg-card border border-border rounded-xl p-5">
-          <h3 className="font-heading font-bold text-foreground mb-4">📊 Articles par catégorie</h3>
+          className="bg-card border border-border rounded-xl p-4 md:p-5">
+          <h3 className="font-heading font-bold text-foreground mb-4 text-sm md:text-base">📊 Articles par catégorie</h3>
           {categoryData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
@@ -222,34 +221,38 @@ export default function Dashboard() {
       {/* Bar Chart - Top articles */}
       {topArticles.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
-          className="bg-card border border-border rounded-xl p-5 mb-8">
-          <h3 className="font-heading font-bold text-foreground mb-4">🏆 Top articles</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={topArticles} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(37, 30%, 88%)" />
-              <XAxis type="number" tick={{ fontSize: 11 }} stroke="hsl(28, 25%, 45%)" />
-              <YAxis type="category" dataKey="name" width={180} tick={{ fontSize: 11 }} stroke="hsl(28, 25%, 45%)" />
-              <RechartsTooltip />
-              <Bar dataKey="views" fill="hsl(37, 91%, 55%)" radius={[0, 6, 6, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          className="bg-card border border-border rounded-xl p-4 md:p-5 mb-6 md:mb-8">
+          <h3 className="font-heading font-bold text-foreground mb-4 text-sm md:text-base">🏆 Top articles</h3>
+          <div className="overflow-x-auto">
+            <div className="min-w-[300px]">
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={topArticles} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(37, 30%, 88%)" />
+                  <XAxis type="number" tick={{ fontSize: 10 }} stroke="hsl(28, 25%, 45%)" />
+                  <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 10 }} stroke="hsl(28, 25%, 45%)" />
+                  <RechartsTooltip />
+                  <Bar dataKey="views" fill="hsl(37, 91%, 55%)" radius={[0, 6, 6, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </motion.div>
       )}
 
       {/* Recent Posts Table */}
       <div className="bg-card border border-border rounded-xl">
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <h2 className="font-heading font-bold text-foreground">Derniers articles</h2>
-          <Link to="/admin/posts" className="text-sm text-primary hover:underline">Voir tout</Link>
+        <div className="p-3 md:p-4 border-b border-border flex items-center justify-between">
+          <h2 className="font-heading font-bold text-foreground text-sm md:text-base">Derniers articles</h2>
+          <Link to="/admin/posts" className="text-xs md:text-sm text-primary hover:underline">Voir tout</Link>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-xs md:text-sm">
             <thead>
               <tr className="border-b border-border text-left">
-                <th className="px-4 py-3 font-medium text-muted-foreground">Article</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Catégorie</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Statut</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground text-right">Vues</th>
+                <th className="px-3 md:px-4 py-3 font-medium text-muted-foreground">Article</th>
+                <th className="px-3 md:px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Catégorie</th>
+                <th className="px-3 md:px-4 py-3 font-medium text-muted-foreground">Statut</th>
+                <th className="px-3 md:px-4 py-3 font-medium text-muted-foreground text-right">Vues</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -259,19 +262,19 @@ export default function Dashboard() {
                   ))
                 : posts.slice(0, 8).map((post) => (
                     <tr key={post.id} className="hover:bg-secondary/30 transition-colors">
-                      <td className="px-4 py-3">
-                        <Link to={`/admin/posts/${post.id}/edit`} className="flex items-center gap-3 group">
-                          {post.cover_url && <img src={post.cover_url} alt="" className="w-10 h-7 rounded object-cover flex-shrink-0" loading="lazy" width={40} height={28} />}
-                          <span className="font-medium text-foreground group-hover:text-primary transition-colors truncate max-w-[200px]">{post.title}</span>
+                      <td className="px-3 md:px-4 py-3">
+                        <Link to={`/admin/posts/${post.id}/edit`} className="flex items-center gap-2 md:gap-3 group">
+                          {post.cover_url && <img src={post.cover_url} alt="" className="w-8 h-6 md:w-10 md:h-7 rounded object-cover flex-shrink-0" loading="lazy" width={40} height={28} />}
+                          <span className="font-medium text-foreground group-hover:text-primary transition-colors truncate max-w-[120px] sm:max-w-[200px]">{post.title}</span>
                         </Link>
                       </td>
-                      <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground">{post.category}</td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${post.status === "published" ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"}`}>
+                      <td className="px-3 md:px-4 py-3 hidden sm:table-cell text-muted-foreground">{post.category}</td>
+                      <td className="px-3 md:px-4 py-3">
+                        <span className={`text-[10px] md:text-xs px-2 py-0.5 rounded-full font-semibold ${post.status === "published" ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"}`}>
                           {post.status === "published" ? "Publié" : "Brouillon"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right text-muted-foreground">{(post.views || 0).toLocaleString()}</td>
+                      <td className="px-3 md:px-4 py-3 text-right text-muted-foreground">{(post.views || 0).toLocaleString()}</td>
                     </tr>
                   ))}
             </tbody>

@@ -58,12 +58,12 @@ export default function Subscribers() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="font-heading text-2xl font-bold text-foreground">📬 Newsletter</h1>
+          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">📬 Newsletter</h1>
           <p className="text-sm text-muted-foreground">{subs.length} abonné{subs.length > 1 ? "s" : ""}</p>
         </div>
-        <Button onClick={exportCSV} className="honey-gradient text-primary-foreground gap-1.5">
+        <Button onClick={exportCSV} className="honey-gradient text-primary-foreground gap-1.5 min-h-[44px] w-full sm:w-auto">
           <Download className="w-4 h-4" /> Exporter CSV
         </Button>
       </div>
@@ -78,40 +78,43 @@ export default function Subscribers() {
         </div>
       ) : (
         <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left">
-                <th className="px-4 py-3 font-medium text-muted-foreground">Email</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Date</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {subs.map((s) => (
-                <tr key={s.id} className="hover:bg-secondary/30 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-primary" />
-                      <span className="font-medium text-foreground">{s.email}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {new Date(s.created_at).toLocaleDateString("fr-FR")}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => deleteMutation.mutate(s.id)}
-                      disabled={deleteMutation.isPending}
-                    >
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-border text-left">
+                  <th className="px-3 sm:px-4 py-3 font-medium text-muted-foreground">Email</th>
+                  <th className="px-3 sm:px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Date</th>
+                  <th className="px-3 sm:px-4 py-3 font-medium text-muted-foreground text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {subs.map((s) => (
+                  <tr key={s.id} className="hover:bg-secondary/30 transition-colors">
+                    <td className="px-3 sm:px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="font-medium text-foreground truncate max-w-[200px] sm:max-w-none">{s.email}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 sm:px-4 py-3 text-muted-foreground hidden sm:table-cell">
+                      {new Date(s.created_at).toLocaleDateString("fr-FR")}
+                    </td>
+                    <td className="px-3 sm:px-4 py-3 text-right">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => deleteMutation.mutate(s.id)}
+                        disabled={deleteMutation.isPending}
+                        className="min-h-[44px] min-w-[44px]"
+                      >
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

@@ -196,11 +196,11 @@ export default function PostEditor() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="flex items-center gap-3 mb-6">
-        <Link to="/admin/posts" className="p-1.5 rounded-lg hover:bg-secondary/50 text-muted-foreground">
+      <div className="flex items-center gap-3 mb-4 md:mb-6">
+        <Link to="/admin/posts" className="p-2 rounded-lg hover:bg-secondary/50 text-muted-foreground min-h-[44px] min-w-[44px] flex items-center justify-center">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="font-heading text-xl font-bold text-foreground">
+        <h1 className="font-heading text-lg md:text-xl font-bold text-foreground">
           {isEdit ? "Modifier l'article" : "Nouvel article"}
         </h1>
       </div>

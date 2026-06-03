@@ -124,6 +124,45 @@ export default function PostEditor() {
     setUploading(false);
   };
 
+  const handleInsertContentImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setInsertingImage(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `content/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage.from("blog-media").upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type,
+      });
+      if (error) throw error;
+      const { data } = supabase.storage.from("blog-media").getPublicUrl(path);
+      const url = data.publicUrl;
+      const tag = `\n<img src="${url}" alt="${file.name.replace(/\.[^.]+$/, "")}" />\n`;
+      const ta = contentRef.current;
+      if (ta) {
+        const start = ta.selectionStart ?? form.content.length;
+        const end = ta.selectionEnd ?? form.content.length;
+        const next = form.content.slice(0, start) + tag + form.content.slice(end);
+        handleChange("content", next);
+        requestAnimationFrame(() => {
+          ta.focus();
+          const pos = start + tag.length;
+          ta.setSelectionRange(pos, pos);
+        });
+      } else {
+        handleChange("content", form.content + tag);
+      }
+      toast({ title: "Image insérée ✓" });
+    } catch (err: any) {
+      toast({ title: "Erreur upload", description: err?.message || "Upload impossible", variant: "destructive" });
+    } finally {
+      setInsertingImage(false);
+    }
+  };
+
   const save = async (status?: string) => {
     if (!form.title.trim() || !form.slug.trim()) {
       toast({ title: "Titre et slug requis", variant: "destructive" });

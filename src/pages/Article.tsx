@@ -148,26 +148,26 @@ export default function ArticlePage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
-      <div className="relative h-[45vh] min-h-[320px]">
-        <img
-          src={article.coverImage || "https://placehold.co/1200x600?text=🐝"}
-          alt={article.title}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 hero-overlay" />
-        <div className="relative z-10 h-full flex items-end">
-          <div className="container mx-auto px-4 pb-8">
-            <Link to="/" className="inline-flex items-center gap-1 text-sm text-background/70 hover:text-background mb-4 transition-colors">
+      <div className="container mx-auto px-4 pt-6">
+        <section className="relative max-w-6xl mx-auto">
+          <img
+            src={article.coverImage || "https://placehold.co/1200x600?text=🐝"}
+            alt={article.title}
+            className="w-full h-[320px] sm:h-[420px] lg:h-[500px] object-cover rounded-2xl"
+          />
+          <div className="absolute inset-0 bg-black/50 rounded-2xl" />
+          <div className="absolute bottom-6 left-6 right-6 sm:bottom-8 sm:left-8 sm:right-8 z-10">
+            <Link to="/" className="inline-flex items-center gap-1 text-sm text-white/80 hover:text-white mb-3 transition-colors">
               <ArrowLeft className="w-4 h-4" /> Retour
             </Link>
             <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-3 ${categoryColors[article.category]}`}>
               {categoryLabels[article.category]}
             </span>
-            <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-background leading-tight max-w-3xl">
+            <h1 className="font-heading text-2xl sm:text-3xl lg:text-5xl font-bold text-white leading-tight max-w-3xl">
               {article.title}
             </h1>
           </div>
-        </div>
+        </section>
       </div>
 
       <div className="container mx-auto px-4">

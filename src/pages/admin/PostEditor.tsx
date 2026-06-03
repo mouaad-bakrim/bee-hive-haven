@@ -274,14 +274,37 @@ export default function PostEditor() {
               <p className="text-xs text-muted-foreground mt-1">{form.excerpt.length}/150</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Contenu (HTML)</label>
+              <div className="flex items-center justify-between mb-1 gap-2 flex-wrap">
+                <label className="text-sm font-medium text-foreground">Contenu (HTML)</label>
+                <div className="flex items-center gap-2">
+                  <label className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-input cursor-pointer hover:bg-secondary/40 text-xs text-foreground min-h-[36px]">
+                    {insertingImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5" />}
+                    {insertingImage ? "Upload…" : "Insérer image"}
+                    <input type="file" accept="image/*" onChange={handleInsertContentImage} className="hidden" disabled={insertingImage} />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowPreview((v) => !v)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-input hover:bg-secondary/40 text-xs text-foreground min-h-[36px]"
+                  >
+                    <Eye className="w-3.5 h-3.5" /> {showPreview ? "Masquer aperçu" : "Aperçu"}
+                  </button>
+                </div>
+              </div>
               <textarea
+                ref={contentRef}
                 value={form.content}
                 onChange={(e) => handleChange("content", e.target.value)}
-                placeholder="<h2>Titre</h2><p>Contenu...</p>"
+                placeholder='<h2>Titre</h2><p>Contenu...</p><img src="https://..." alt="..." />'
                 rows={16}
                 className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring font-mono"
               />
+              {showPreview && (
+                <div className="mt-3 p-4 rounded-md border border-border bg-background">
+                  <p className="text-xs text-muted-foreground mb-2">Aperçu</p>
+                  <div className="article-content" dangerouslySetInnerHTML={{ __html: form.content }} />
+                </div>
+              )}
             </div>
           </div>
 

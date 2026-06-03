@@ -59,7 +59,10 @@ export default function PostEditor() {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [insertingImage, setInsertingImage] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [autoSlug, setAutoSlug] = useState(!isEdit);
+  const contentRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     if (!isEdit || !id) return;

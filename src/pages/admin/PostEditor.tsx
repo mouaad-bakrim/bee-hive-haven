@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Save, Send, Trash2, Eye, Loader2, Upload } from "lucide-react";
+import { ArrowLeft, Save, Send, Trash2, Eye, Loader2, Upload, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { createArticle, updateArticle, deleteArticle } from "@/features/articles/articles.api";
 import { useAuth } from "@/hooks/useAuth";
